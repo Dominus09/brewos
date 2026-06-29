@@ -1,0 +1,65 @@
+# Dependencias
+node_modules/
+__pycache__/
+*.py[cod]
+*$py.class
+.Python
+venv/
+.venv/
+env/
+.env
+.env.*
+!.env.example
+
+# Build y distribución
+dist/
+build/
+.next/
+out/
+*.egg-info/
+.eggs/
+
+# IDE y sistema
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Logs y caché
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
+.cache/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+coverage/
+htmlcov/
+.coverage
+
+# Base de datos local
+*.db
+*.sqlite3
+
+# Docker (volúmenes locales)
+docker/data/
+
+# Secretos y credenciales
+*.pem
+*.key
+secrets/
+credentials.json
+
+# Archivos temporales
+tmp/
+temp/
+*.tmp
+*.bak
+
+# OS / OneDrive
+~$*
