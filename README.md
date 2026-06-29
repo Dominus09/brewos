@@ -46,7 +46,7 @@ brewos/
 ├── docker/         # Contenedores y despliegue (futuro)
 ├── firmware/       # BrewNode / ESP32 (futuro)
 ├── hardware/       # Documentación de hardware (futuro)
-├── assets/         # Marca, iconos e imágenes
+├── assets/         # Design System, marca, tokens, mockups
 └── foundation/     # Decisiones fundacionales y referencias
 ```
 
@@ -62,10 +62,17 @@ brewos/
 | [06 — Dirección de marca](docs/06-brand-direction.md) | Identidad visual Insular Origins |
 | [07 — Master Plan](docs/07-master-plan.md) | Visión del terreno y zonas futuras |
 | [08 — Reglas de desarrollo](docs/08-development-rules.md) | Principios para implementar el sistema |
+| [09 — Design System](docs/09-design-system.md) | Identidad visual y sistema de diseño oficial |
+| [10 — Mapa de navegación](docs/10-navigation-map.md) | Menú, submenús y relaciones entre módulos |
+| [11 — Principios de producto](docs/11-product-principles.md) | Reglas oficiales de producto |
+| [12 — Dominio de Recursos](docs/12-resource-domain.md) | Definición y atributos del Recurso |
+| [13 — Taxonomía de Recursos](docs/13-resource-taxonomy.md) | Tipos, subtipos y comportamiento |
+| [14 — Ciclo de vida de Recursos](docs/14-resource-lifecycle.md) | Estados y transiciones |
+| [Decisiones (ADR)](docs/decisions/) | Registro de decisiones arquitectónicas |
 
 ## Estado actual
 
-**Sprint 0 — Fundación.** Este repositorio contiene únicamente estructura, documentación y visión de producto. No hay código de aplicación, dependencias ni despliegue configurado aún.
+**Sprint 1 — Design System.** Design System y UI Foundation definidos. Documentación funcional de navegación y principios de producto cerrada (docs 10–11, ADRs).
 
 ## Licencia y propiedad
 

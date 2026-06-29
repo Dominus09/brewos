@@ -1,38 +1,59 @@
-# Frontend
+# Frontend — BrewOS
 
-Aplicación web responsive de BrewOS construida con **Next.js**.
+Aplicación web de BrewOS: **Next.js**, **TypeScript**, **Tailwind CSS v4**, **shadcn/ui**, **Lucide Icons**.
 
-## Propósito
+## Estado
 
-Esta carpeta alojará la interfaz de usuario de BrewCore:
+**UI Foundation (Sprint 1)** — Pantallas visuales sin backend, autenticación ni datos reales.
 
-- Login y dashboard
-- Módulos funcionales (recursos, inventario, recetas, producción, etc.)
-- Experiencia responsive para PC, tablet y móvil
-- Consumo de la API REST del backend
+## Inicio rápido
 
-## Estado actual
-
-**No implementado.** Sprint 0 — solo estructura y documentación.
-
-## Estructura prevista (futuro)
-
-```
-frontend/
-├── src/
-│   ├── app/          # App Router (Next.js)
-│   ├── components/   # Componentes UI reutilizables
-│   ├── lib/          # Utilidades, cliente API
-│   └── styles/       # Tokens de diseño, globals
-├── public/
-└── package.json
+```bash
+cd frontend
+npm install
+npm run dev
 ```
 
-## Dirección visual
+Abrir [http://localhost:3000](http://localhost:3000)
 
-Seguir la guía en [06 — Dirección de marca](../docs/06-brand-direction.md): paleta Insular Origins, sobriedad premium, responsive first.
+| Ruta | Pantalla |
+|------|----------|
+| `/login` | Login |
+| `/dashboard` | Centro de Control (módulos) |
+| `/dashboard/[module]` | Placeholder por módulo |
+| `/design-system` | Showcase de componentes |
+
+## Estructura
+
+```
+src/
+├── app/
+│   ├── login/              # Pantalla de acceso (solo UI)
+│   ├── (shell)/            # Layout con sidebar
+│   │   ├── dashboard/      # Centro de Control
+│   │   └── design-system/  # Componentes base
+│   ├── layout.tsx          # Fuentes, tema, providers
+│   └── globals.css         # Tokens BrewOS
+├── components/
+│   ├── brand/              # Logo
+│   ├── dashboard/          # ModuleCard
+│   ├── design-system/      # EmptyState, LoadingState
+│   ├── layout/             # Sidebar, Header
+│   ├── theme/              # Dark/light
+│   └── ui/                 # shadcn/ui
+└── lib/
+    └── modules.ts          # Definición de módulos
+```
+
+## Decisiones de diseño
+
+- **Modo oscuro por defecto** — operación tipo panel de control (Grafana, Home Assistant)
+- **Sidebar shadcn** — colapsable en desktop, drawer en móvil
+- **Sin datos mock** — placeholders y empty states únicamente
+- **Tokens en CSS** — colores del [Design System](../docs/09-design-system.md) en `globals.css`
+- **Route group `(shell)`** — layout compartido sin afectar `/login`
 
 ## Referencias
 
-- [Módulos](../docs/04-modules.md)
-- [Roadmap — Sprint 1](../docs/03-roadmap.md)
+- [09 — Design System](../docs/09-design-system.md)
+- [assets/colors/tokens.json](../assets/colors/tokens.json)

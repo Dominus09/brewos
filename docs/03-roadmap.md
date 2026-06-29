@@ -11,27 +11,45 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 - [x] Estructura del repositorio
 - [x] Documentación inicial (visión, arquitectura, módulos, modelo de datos)
 - [x] Definición de módulos funcionales
-- [ ] Estilo base (tipografía, colores, componentes UI de referencia)
+- [x] Estilo base (tipografía, colores, componentes UI de referencia) → ver [09 — Design System](09-design-system.md)
 - [ ] Configuración inicial de entornos (cuando corresponda)
 
 **Entregable:** Repositorio documentado, visión clara, equipo alineado.
 
 ---
 
-## Sprint 1 — Login y Dashboard
+## Sprint 1 — Design System
+
+**Objetivo:** Definir la identidad visual oficial y el sistema de diseño antes del código frontend.
+
+- [x] Design System documentado ([09 — Design System](09-design-system.md))
+- [x] Paleta de colores (claro / oscuro)
+- [x] Tipografía y escala
+- [x] Iconografía y componentes
+- [x] Conceptos de logo y monograma
+- [x] Estructura de carpetas en `assets/`
+- [ ] Logo final (diseño gráfico)
+- [ ] Mockups Figma de Login y Dashboard
+- [ ] Export `tokens.json` en `assets/colors/`
+
+**Entregable:** Design System listo para implementación frontend.
+
+---
+
+## Sprint 2 — Login y Dashboard
 
 **Objetivo:** Acceso seguro al sistema y vista general del estado operativo.
 
 - Login (email/contraseña o método definido)
 - Gestión de usuarios
 - Roles y permisos básicos
-- Dashboard inicial con resumen de actividad
+- Dashboard — Centro de Control (según Design System)
 
 **Pregunta que responde:** ¿Quién entra y qué está pasando hoy?
 
 ---
 
-## Sprint 2 — Recursos
+## Sprint 3 — Recursos
 
 **Objetivo:** Catálogo maestro de todo lo que existe en la operación.
 
@@ -51,7 +69,7 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 
 ---
 
-## Sprint 3 — Inventario
+## Sprint 4 — Inventario
 
 **Objetivo:** Control de stock y movimientos.
 
@@ -65,7 +83,7 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 
 ---
 
-## Sprint 4 — Recetario
+## Sprint 5 — Recetario
 
 **Objetivo:** Formulaciones versionadas y reproducibles.
 
@@ -79,7 +97,7 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 
 ---
 
-## Sprint 5 — Producción
+## Sprint 6 — Producción
 
 **Objetivo:** Ejecución de lotes en el mundo real.
 
@@ -92,7 +110,7 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 
 ---
 
-## Sprint 6 — Trazabilidad
+## Sprint 7 — Trazabilidad
 
 **Objetivo:** Historial completo e inmutable por lote.
 
@@ -107,7 +125,7 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 
 ---
 
-## Sprint 7 — Jardín Botánico
+## Sprint 8 — Jardín Botánico
 
 **Objetivo:** Gestión del cultivo y su vínculo con la producción.
 
@@ -122,7 +140,7 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 
 ---
 
-## Sprint 8 — Knowledge Base
+## Sprint 9 — Knowledge Base
 
 **Objetivo:** Repositorio de conocimiento del proyecto.
 
@@ -138,7 +156,7 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 
 ---
 
-## Sprint 9 — BrewNode / ESP32
+## Sprint 10 — BrewNode / ESP32
 
 **Objetivo:** Integración con hardware de sensores.
 
@@ -148,7 +166,7 @@ Roadmap de desarrollo de BrewOS por sprints. Cada sprint entrega valor funcional
 - Comunicación con API BrewCore
 - Pantalla local para visualización
 
-**Prerrequisito:** Módulos base (Sprints 1–6) estables y API documentada.
+**Prerrequisito:** Módulos base (Sprints 2–7) estables y API documentada.
 
 **Pregunta que responde:** ¿Qué dicen los sensores en tiempo real?
 

@@ -1,36 +1,38 @@
 # Assets
 
-Recursos visuales y de marca para BrewOS e Insular Origins.
+Recursos visuales y de diseño de BrewOS.
 
-## Propósito
-
-Esta carpeta almacena archivos estáticos de identidad y diseño:
-
-- Logos (principal Insular Origins, monograma IO)
-- Paleta de colores exportada (CSS, JSON, Figma)
-- Iconografía del sistema
-- Imágenes de referencia para UI
-- Fuentes con licencia adecuada (si se incluyen en repo)
-
-## Estado actual
-
-**Vacía.** La dirección de marca está documentada; los archivos gráficos se añadirán en Sprint 0–1.
-
-## Estructura prevista
+## Estructura
 
 ```
 assets/
-├── brand/            # Logos, monograma, guía rápida
-├── icons/            # Iconos de la aplicación
-├── images/           # Imágenes de referencia
-└── fonts/            # Tipografías (si aplica)
+├── brand/
+│   └── logos/          # Logos y monogramas
+├── icons/              # Iconos custom (si aplica)
+├── colors/             # Tokens de color exportados
+├── typography/         # Referencias tipográficas
+├── ui/                 # Componentes y exports Figma
+└── mockups/            # Mockups de pantallas
 ```
 
-## Uso
+## Design System oficial
 
-- El frontend importará assets desde aquí o desde `frontend/public/` según convención de Next.js
-- No duplicar logos en múltiples carpetas sin versión canónica en `assets/brand/`
+La fuente de verdad visual es **[09 — Design System](../docs/09-design-system.md)** (Sprint 1).
+
+| Dimensión | Decisión |
+|-----------|----------|
+| Estética | Tecnológica premium — Home Assistant, Grafana, UniFi |
+| Color primario | `#0A8F7A` (teal-verde) |
+| Tipografía | Plus Jakarta Sans + Inter + JetBrains Mono |
+| Iconos | Lucide outline |
+| Modo default | Oscuro |
+
+## Estado
+
+- Design System documentado
+- Logos, tokens JSON y mockups visuales pendientes de producción gráfica
 
 ## Referencias
 
-- [06 — Dirección de marca](../docs/06-brand-direction.md)
+- [09 — Design System](../docs/09-design-system.md)
+- [06 — Dirección de marca Insular Origins](../docs/06-brand-direction.md)

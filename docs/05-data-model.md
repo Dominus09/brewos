@@ -1,6 +1,8 @@
 # 05 — Modelo de datos
 
-Modelo conceptual inicial de BrewOS. **No incluye migraciones ni SQL** — solo define entidades, relaciones y propósito de cada tabla para guiar el diseño de la base de datos en sprints futuros.
+Modelo conceptual de BrewOS. **No incluye migraciones ni SQL** — define entidades, relaciones y propósito de cada tabla para guiar el diseño de la base de datos.
+
+**Entidad central:** `resources` — ver [ADR-0005](decisions/ADR-0005-resource-as-core-entity.md) · [12 — Dominio de Recursos](12-resource-domain.md)
 
 ---
 
@@ -9,68 +11,104 @@ Modelo conceptual inicial de BrewOS. **No incluye migraciones ni SQL** — solo 
 ```
 users ── roles
   │
-  ├── inventory_movements
-  ├── batches ── batch_steps
-  │       └── traceability_events
-  ├── harvests
+  ├── inventory_movements ──► resources ◄── resource_costs
+  ├── batches ── batch_steps          ◄── resource_documents
+  │       └── traceability_events     ◄── recipe_items
+  ├── harvests                        ◄── recipe_versions ◄── recipes
   ├── documents
   └── journal_entries
 
-resources ── resource_categories
+resources ── resource_types
+    ├── resource_subtypes
+    ├── resource_categories
+    ├── resource_tags (via resource_tag_links)
     ├── units
-    ├── suppliers
-    ├── recipe_items ◄── recipe_versions ◄── recipes
+    ├── suppliers (via resource_suppliers)
     ├── inventory_movements
+    ├── recipe_items
     └── traceability_events
 
-botanical_species ── botanical_plants ── harvests
+botanical_species ── botanical_plants ── harvests ──► resources (botánicos)
 ```
 
 ---
 
-## Entidades
-
-### `users`
-
-Usuarios del sistema con acceso a BrewOS.
-
-| Campo conceptual | Descripción |
-|------------------|-------------|
-| Identidad | Nombre, email, credenciales |
-| Rol | Referencia a `roles` |
-| Estado | Activo, inactivo |
-
-**Para qué sirve:** Autenticación, autorización y auditoría (quién hizo qué).
-
----
-
-### `roles`
-
-Roles con permisos por módulo (admin, operador, consulta, etc.).
-
-**Para qué sirve:** Control de acceso granular sin hardcodear permisos en código.
-
----
+## Núcleo: Recursos
 
 ### `resources`
 
-Catálogo maestro de todo lo que existe: insumos, botánicos, equipamiento, envases, herramientas.
+Entidad central del sistema. Todo insumo, botánico, envase, equipamiento, herramienta, producto terminado, servicio y componente es un recurso.
 
-| Relaciones |
-|------------|
-| `resource_categories` — clasificación |
-| `units` — unidad de medida |
-| `suppliers` — proveedor principal (opcional) |
+| Grupo de campos | Ejemplos conceptuales |
+|-----------------|----------------------|
+| Identidad | `name`, `internal_code`, `description`, `notes` |
+| Clasificación | `resource_type_id`, `resource_subtype_id`, `resource_category_id` |
+| Medida | `unit_id` |
+| Comportamiento | `is_inventoriable`, `is_consumable`, `is_cultivable`, `is_equipment`, `is_sellable`, `is_traceable` |
+| Trazabilidad / cumplimiento | `requires_lot`, `requires_expiry`, `requires_tech_sheet`, `requires_safety_sheet` |
+| Inventario | `min_stock` (si inventariable) |
+| Estado | `status` (draft, active, inactive, archived) |
+| Estado extendido | `equipment_status`, `finished_product_status` (según tipo) |
 
-**Para qué sirve:** Fuente única de verdad para cualquier elemento usado en inventario, recetas o producción.
+**Para qué sirve:** Fuente única de verdad para cualquier elemento usado en inventario, recetas, producción, trazabilidad y reportes.
+
+**Relaciones:** Ver tablas satélite abajo.
+
+---
+
+### `resource_types`
+
+Tipos principales fijos de la taxonomía.
+
+| Valores (conceptuales) |
+|------------------------|
+| supply, botanical, container, equipment, tool, finished_product, service, cleaning_material, packaging_material, electronic_component |
+
+**Para qué sirve:** Define comportamiento por defecto y subtipos válidos. Administrado por el sistema, no libre.
+
+---
+
+### `resource_subtypes`
+
+Subtipos dentro de cada tipo (ej. Insumo → Alcohol; Botánico → Cultivado).
+
+| Campos conceptuales |
+|---------------------|
+| `resource_type_id`, `code`, `name`, `default_flags` (JSON o columnas) |
+
+**Para qué sirve:** Granularidad de clasificación y defaults de validación en UI.
 
 ---
 
 ### `resource_categories`
 
-Jerarquía de categorías (ej: Insumos → Malta → Malta base).
+Jerarquía libre de categorías operativas (ej. Destilados → Botánicos chilotes).
 
-**Para qué sirve:** Organización, filtros y reportes por tipo de recurso.
+| Campos conceptuales |
+|---------------------|
+| `name`, `parent_id`, `description` |
+
+**Para qué sirve:** Organización, filtros y reportes independientes del tipo.
+
+---
+
+### `resource_tags`
+
+Etiquetas transversales para búsqueda y agrupación (ej. `orgánico`, `experimental`, `prioridad-alta`).
+
+| Campos conceptuales |
+|---------------------|
+| `name`, `color` (opcional) |
+
+**Para qué sirve:** Clasificación flexible sin alterar taxonomía formal.
+
+---
+
+### `resource_tag_links`
+
+Tabla de unión muchos-a-muchos entre `resources` y `resource_tags`.
+
+**Para qué sirve:** Asignar múltiples etiquetas a un recurso.
 
 ---
 
@@ -86,9 +124,51 @@ Unidades de medida (kg, L, g, unidad, %).
 
 Proveedores de recursos.
 
+| Campos conceptuales |
+|---------------------|
+| `name`, `contact`, `notes`, `status` |
+
 **Para qué sirve:** Trazabilidad de origen de compras y análisis de costos por proveedor.
 
 ---
+
+### `resource_suppliers`
+
+Relación muchos-a-muchos: un recurso puede tener varios proveedores; un proveedor suministra muchos recursos.
+
+| Campos conceptuales |
+|---------------------|
+| `resource_id`, `supplier_id`, `is_primary`, `supplier_code`, `last_purchase_price` |
+
+**Para qué sirve:** Proveedor principal vs alternativos; historial de referencia de compra.
+
+---
+
+### `resource_costs`
+
+Historial y referencias de costo por recurso.
+
+| Campos conceptuales |
+|---------------------|
+| `resource_id`, `cost_type` (purchase, average, estimated), `amount`, `currency`, `valid_from`, `source` |
+
+**Para qué sirve:** Separar costo de compra, promedio calculado y valor estimado sin duplicar en `resources`. El promedio puede derivarse de inventario y sincronizarse aquí.
+
+---
+
+### `resource_documents`
+
+Documentos adjuntos a un recurso: ficha técnica, ficha de seguridad, certificados.
+
+| Campos conceptuales |
+|---------------------|
+| `resource_id`, `document_type`, `title`, `file_ref` o FK a `documents`, `uploaded_at` |
+
+**Para qué sirve:** Cumplimiento (`requires_tech_sheet`, `requires_safety_sheet`) y consulta desde Recursos o Laboratorio.
+
+---
+
+## Inventario y producción
 
 ### `inventory_movements`
 
@@ -96,14 +176,15 @@ Movimientos de stock: entradas, salidas y ajustes.
 
 | Campos conceptuales |
 |---------------------|
-| Recurso |
-| Tipo (entrada / salida / ajuste) |
-| Cantidad |
-| Costo unitario (en entradas) |
-| Referencia (lote, compra, producción) |
-| Usuario y fecha |
+| `resource_id` |
+| `movement_type` (in, out, adjustment) |
+| `quantity`, `unit_cost` (en entradas) |
+| `lot_code`, `expiry_date` (si aplica) |
+| `reference_type`, `reference_id` (batch, purchase, harvest) |
+| `stock_status` (available, reserved, consumed, waste, expired) |
+| `user_id`, `created_at` |
 
-**Para qué sirve:** Historial de stock y base para cálculo de costo promedio y alertas.
+**Para qué sirve:** Historial de stock, costo promedio y alertas. Nunca crea recursos.
 
 ---
 
@@ -111,148 +192,125 @@ Movimientos de stock: entradas, salidas y ajustes.
 
 Receta base (nombre, tipo de producto, descripción).
 
-**Para qué sirve:** Agrupar versiones de una misma formulación bajo un identificador estable.
+**Para qué sirve:** Agrupar versiones bajo un identificador estable. Puede vincularse a recurso `finished_product`.
 
 ---
 
 ### `recipe_versions`
 
-Versiones numeradas de una receta. Cada versión es un snapshot editable hasta que se usa en producción.
+Versiones numeradas de una receta.
 
 | Campos conceptuales |
 |---------------------|
-| Número de versión |
-| Rendimiento esperado |
-| Costo estimado |
-| Estado (borrador / activa / archivada) |
+| `recipe_id`, `version_number`, `expected_yield`, `estimated_cost`, `status` |
 
-**Para qué sirve:** Evolución controlada de formulaciones; la producción congela la versión usada.
+**Para qué sirve:** Evolución controlada; producción congela la versión usada.
 
 ---
 
 ### `recipe_items`
 
-Ingredientes de una versión de receta: recurso + cantidad + unidad.
+Ingredientes: recurso + cantidad + unidad.
 
-**Para qué sirve:** Definir la composición exacta de cada versión y calcular costos estimados.
+**Para qué sirve:** Composición y cálculo de costos estimados. Solo recursos `consumible`.
 
 ---
 
 ### `batches`
 
-Lote de producción en curso o completado.
+Lote de producción.
 
 | Relaciones |
 |------------|
-| `recipe_versions` — versión congelada al iniciar |
-| `batch_steps` — etapas del proceso |
-| `traceability_events` — historial |
+| `recipe_version_id` congelada |
+| `batch_steps`, `traceability_events` |
+| Output opcional: `finished_product_resource_id` |
 
-**Para qué sirve:** Unidad central de producción; todo lo que ocurre en un lote cuelga de aquí.
+**Para qué sirve:** Unidad central de producción.
 
 ---
 
 ### `batch_steps`
 
-Etapas del proceso de un lote (maceración, fermentación, destilación, etc.).
+Etapas del proceso de un lote.
 
-| Campos conceptuales |
-|---------------------|
-| Nombre de etapa |
-| Inicio / fin |
-| Observaciones |
-| Datos manuales (temperatura, densidad, etc.) |
-
-**Para qué sirve:** Registrar el flujo temporal del proceso productivo.
+**Para qué sirve:** Flujo temporal y datos manuales del proceso.
 
 ---
 
 ### `traceability_events`
 
-Eventos de trazabilidad vinculados a un lote: consumo de recurso, observación, foto, documento.
+Eventos por lote: consumo, observación, foto, documento, uso de equipo.
 
-**Para qué sirve:** Historial completo e inmutable de qué ocurrió en cada lote.
+**Para qué sirve:** Historial inmutable. Referencia `resource_id` en consumos.
 
 ---
 
+## Jardín botánico
+
 ### `botanical_species`
 
-Catálogo de especies botánicas (nombre científico, común, notas de cultivo).
+Catálogo de especies (nombre científico, común, notas).
 
-**Para qué sirve:** Identificar qué se cultiva independientemente de plantas individuales.
+**Para qué sirve:** Identificar qué se cultiva. Puede vincular a recurso botánico maestro.
 
 ---
 
 ### `botanical_plants`
 
-Plantas individuales o grupos plantados en una ubicación.
+Plantas o grupos en una ubicación.
 
-| Relaciones |
-|------------|
-| `botanical_species` |
-| Ubicación en terreno |
-| Fecha de plantación |
-| Estado |
+| Campos conceptuales |
+|---------------------|
+| `species_id`, `resource_id` (botánico cultivable), `location`, `planted_at`, `cultivation_status` |
 
-**Para qué sirve:** Seguimiento fino del jardín y origen de cosechas.
+**Para qué sirve:** Seguimiento fino y origen de cosechas.
 
 ---
 
 ### `harvests`
 
-Cosechas de plantas botánicas.
+Cosechas vinculadas a plantas y opcionalmente a lotes.
 
-| Relaciones |
-|------------|
-| `botanical_plants` |
-| Cantidad cosechada |
-| Fecha |
-| Lote de producción (opcional) |
+**Para qué sirve:** Puente Jardín → Inventario → Producción → Trazabilidad.
 
-**Para qué sirve:** Conectar el jardín con la producción y la trazabilidad de botánicos.
+---
+
+## Usuarios y documentación
+
+### `users` / `roles`
+
+Autenticación y permisos por módulo.
 
 ---
 
 ### `documents`
 
-Archivos y referencias documentales (manuales, normativas, fotos, PDFs).
-
-| Campos conceptuales |
-|---------------------|
-| Título, tipo, archivo o URL |
-| Módulo relacionado (opcional) |
-| Entidad relacionada (lote, recurso, etc.) |
-
-**Para qué sirve:** Knowledge Base y adjuntos en trazabilidad.
+Archivos generales del Laboratorio y adjuntos transversales.
 
 ---
 
 ### `journal_entries`
 
-Entradas de bitácora del proyecto: decisiones, aprendizajes, hitos.
-
-| Campos conceptuales |
-|---------------------|
-| Título, contenido |
-| Fecha |
-| Autor |
-| Etiquetas |
-
-**Para qué sirve:** Memoria viva del proyecto más allá de los datos transaccionales.
+Bitácora del proyecto en Laboratorio.
 
 ---
 
 ## Reglas del modelo
 
-1. Todo insumo, herramienta o equipamiento es un `resource` antes de aparecer en inventario o recetas
-2. `inventory_movements` nunca crea recursos; solo mueve stock
-3. Un `batch` referencia una `recipe_version` congelada al momento de creación
-4. `traceability_events` complementa al lote; no reemplaza movimientos de inventario
-5. `harvests` pueden vincularse a `batches` para trazabilidad botánica
-6. `documents` y `journal_entries` alimentan la Knowledge Base
+1. **Todo elemento operativo es un `resource`** antes de inventario, recetas o producción
+2. `inventory_movements` nunca crea recursos; solo referencia `resource_id`
+3. `recipe_items` solo referencian recursos con `is_consumable = true`
+4. Un `batch` congela `recipe_version` al crearse
+5. `resource_costs` centraliza costos; promedio derivado de movimientos
+6. Recursos `archived` no aparecen en nuevas recetas ni movimientos
+7. `harvests` pueden generar entrada de inventario del recurso botánico vinculado
+8. `resource_documents` satisface requisitos de ficha técnica y seguridad
 
 ---
 
 ## Próximo paso
 
-Cuando se inicie el Sprint 1, traducir este modelo a esquema PostgreSQL con migraciones en `database/`.
+Traducir este modelo a esquema PostgreSQL con migraciones en `database/` cuando inicie Sprint 3 (Recursos).
+
+**Referencias:** [13 — Taxonomía](13-resource-taxonomy.md) · [14 — Ciclo de vida](14-resource-lifecycle.md)
