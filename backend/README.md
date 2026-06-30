@@ -4,7 +4,7 @@ API REST de BrewOS construida con **FastAPI**, **SQLAlchemy 2.x**, **Alembic** y
 
 ## Estado
 
-**Fase 2 — satélites de recurso.** Catálogo base + tablas satélite. Schema dedicado `brewos` en base `analytics`. Sin endpoints de negocio ni autenticación.
+**CE-1 — Core Engine base.** Identity + Event + Audit implementados. Catálogo de recursos + satélites. Sin endpoints de negocio ni autenticación.
 
 ## Base de datos y schema
 
@@ -47,7 +47,10 @@ backend/
 │   ├── main.py
 │   ├── core/
 │   │   ├── config.py
-│   │   └── database_schema.py   # DATABASE_SCHEMA = "brewos"
+│   │   ├── database_schema.py   # DATABASE_SCHEMA = "brewos"
+│   │   ├── identity/            # Identity Engine (CE-1)
+│   │   ├── events/              # Event Engine (CE-1)
+│   │   └── audit/               # Audit Engine (CE-1)
 │   ├── db/
 │   │   ├── base.py              # MetaData(schema=brewos)
 │   │   └── session.py
@@ -100,12 +103,44 @@ $env:DATABASE_URL = "postgresql://user:pass@host:5432/analytics"
 |----------|-------------|
 | `001_initial_resource_catalog` | `CREATE SCHEMA brewos` + catálogo base |
 | `002_resource_satellite_tables` | Tablas satélite de recursos |
+| `003_core_engine_identity_events` | `operational_code_prefixes`, `operational_sequences`, `domain_events`, `audit_log` |
 
-## Seed inicial
+## Core Engine (CE-1)
+
+Motores en `app/core/` — consumo **solo desde services**, nunca desde routers directamente.
+
+| Motor | Módulo | Responsabilidad |
+|-------|--------|-----------------|
+| Identity | `core/identity/` | `BREW-RES-000001`, `DIS-YYYYMMDD-NNN` vía DB |
+| Event | `core/events/` | `domain_events` tipados |
+| Audit | `core/audit/` | `audit_log` derivado de eventos |
+
+```python
+from app.core.identity import IdentityEngine
+
+identity = IdentityEngine()
+with session.begin():
+    code = identity.assign_master_code(session, "resource")
+```
+
+Smoke test (tras migración + seed 004):
 
 ```powershell
-psql $env:DATABASE_URL -f ..\database\seeds\001_base_seed.sql
+.\.venv\Scripts\python.exe -m scripts.identity_smoke_test
 ```
+
+Ver [19 — Core Engine](../docs/19-core-engine.md).
+
+## Seeds iniciales (modular — ADR-0009)
+
+Tras `alembic upgrade head`:
+
+```powershell
+psql $env:DATABASE_URL -f ..\database\bootstrap\000_verify_prerequisites.sql
+psql $env:DATABASE_URL -f ..\database\seeds\run_all.sql
+```
+
+Ver [20 — Bootstrap](../docs/20-bootstrap-strategy.md) y [database/seeds/README.md](../database/seeds/README.md).
 
 ## Desarrollo local
 

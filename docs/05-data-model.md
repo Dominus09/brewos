@@ -129,10 +129,10 @@ Tipos principales de la taxonomía de recursos (ej. supply, botanical, equipment
 | `code`, `name`, `description`, `icon`, `color_token`, `sort_order` |
 | `business_line_id` (opcional) |
 | `default_flags` (JSONB: flags por defecto al crear recurso) |
-| `code_prefix` (prefijo para `internal_code`) |
 | `status`, `is_system` |
+| ~~`code_prefix`~~ | **Deprecado** — ver [20 — Bootstrap §8](20-bootstrap-strategy.md). Identidad vía `BREW-RES-*` (Identity Engine) |
 
-**Para qué sirve:** Define comportamiento por defecto, subtipos válidos y prefijos de código. Administrable desde Configuración (ADR-0006); el seed inicial solo arranca el catálogo base.
+**Para qué sirve:** Define comportamiento por defecto y subtipos válidos. Plantilla inicial en seed `003_resource_types.sql` (categoría B); editable en UI (ADR-0006). **No** define el código visible del recurso.
 
 ---
 
@@ -398,7 +398,36 @@ Catálogo de especies, plantas en ubicación y cosechas vinculadas a recursos bo
 
 ---
 
-## Usuarios y documentación (futuro)
+## Core Engine (CE-1 — implementado)
+
+Tablas transversales del [19 — Core Engine](19-core-engine.md). Migración `003_core_engine_identity_events`.
+
+### `operational_code_prefixes`
+
+Registro de prefijos válidos (seed `004`). Identity Engine **no hardcodea** prefijos.
+
+| Campo | Descripción |
+|-------|-------------|
+| `entity_type` | Clave lógica (`resource`, `distillation`, …) |
+| `prefix` | Prefijo visible (`BREW-RES`, `DIS`, …) |
+| `format_type` | `master` \| `daily` |
+| `reset_policy` | `never` \| `daily` |
+| `example` | Ejemplo canónico doc 18 |
+| `is_active` | Si el prefijo acepta nuevas asignaciones |
+
+### `operational_sequences`
+
+Contador transaccional por `prefix_id` (+ `sequence_date` nullable para maestros). `SELECT FOR UPDATE` evita duplicados.
+
+### `domain_events`
+
+Log append-only de eventos de dominio (`ResourceCreated`, `OperationalCodeGenerated`, …).
+
+### `audit_log`
+
+Registro forense derivado de eventos (`before_data` / `after_data`). Append-only.
+
+---
 
 ### `users` / `roles`
 
@@ -420,7 +449,21 @@ Archivos del Laboratorio y bitácora del proyecto.
 6. Recursos archivados no aparecen en nuevas recetas ni movimientos
 7. Taxonomía y formularios viven en tablas de configuración (ADR-0006), no en enums de código
 8. `dynamic_form_versions` publicadas son inmutables; cambios crean nueva versión
-9. `internal_code` es identificador humano; `id` (UUID) es identificador de sistema
+9. `internal_code` es identificador humano (`BREW-RES-*`, ADR-0007); `id` (UUID) es identificador de sistema
+10. Bootstrap y seeds siguen [20 — Estrategia de bootstrap](20-bootstrap-strategy.md); schema solo vía Alembic
+
+---
+
+## Clasificación bootstrap / configuración / operación
+
+Ver [20 — Bootstrap](20-bootstrap-strategy.md) y [ADR-0009](decisions/ADR-0009-bootstrap-strategy.md).
+
+| Cat. | Descripción | Tablas (actual + futuro) | Seed |
+|------|-------------|--------------------------|------|
+| **A** | Bootstrap obligatorio | `units`, `business_lines` | `001`, `002` |
+| **B** | Configuración inicial | `resource_types`, `operational_code_prefixes` | `003`, `004` |
+| **C** | Config dinámica — solo UI | `resource_subtypes`, `resource_categories`, `dynamic_*`, `production_processes`, `configurable_states`, `industry_templates` | **Nunca** |
+| **D** | Operacional — solo usuarios | `resources`, `suppliers`, satélites, inventario, recetas, lotes, jardín | **Nunca** |
 
 ---
 
@@ -429,11 +472,12 @@ Archivos del Laboratorio y bitácora del proyecto.
 | Fase | Tablas |
 |------|--------|
 | **Fase 1** | `business_lines`, `resource_types`, `resource_subtypes`, `resource_categories`, `units`, `suppliers`, `resources` |
-| **Fase 2 (actual)** | `resource_suppliers`, `resource_costs`, `resource_documents`, `resource_photos`, `resource_tags`, `resource_tag_links` |
+| **Fase 2** | `resource_suppliers`, `resource_costs`, `resource_documents`, `resource_photos`, `resource_tags`, `resource_tag_links` |
+| **CE-1 (actual)** | `operational_code_prefixes`, `operational_sequences`, `domain_events`, `audit_log` |
 | Fase 3 | `dynamic_properties`, `dynamic_forms`, `dynamic_form_versions`, `dynamic_form_fields` |
 | Fase 4 | `production_processes`, `production_process_steps`, `configurable_states`, `industry_templates` |
 | Fase 5+ | Inventario, recetas, lotes, usuarios |
 
-Migraciones en `backend/alembic/versions/`. Seeds en `database/seeds/`. Todas las tablas bajo **`analytics.brewos`**.
+Migraciones en `backend/alembic/versions/`. Seeds modulares en `database/seeds/`. Verificación en `database/bootstrap/`. Todas las tablas bajo **`analytics.brewos`**.
 
-**Referencias:** [13 — Taxonomía](13-resource-taxonomy.md) · [14 — Ciclo de vida](14-resource-lifecycle.md) · [16 — Administración de Producción](16-production-administration.md) · [Database README](../database/README.md)
+**Referencias:** [13 — Taxonomía](13-resource-taxonomy.md) · [14 — Ciclo de vida](14-resource-lifecycle.md) · [16 — Administración de Producción](16-production-administration.md) · [20 — Bootstrap](20-bootstrap-strategy.md) · [Database README](../database/README.md)

@@ -9,7 +9,11 @@ from app.core.database_schema import DATABASE_SCHEMA as SCHEMA
 from app.core.config import get_settings
 from app.db.base import Base
 from app.models import (  # noqa: F401 — register models with metadata
+    AuditLogEntry,
     BusinessLine,
+    DomainEvent,
+    OperationalCodePrefix,
+    OperationalSequence,
     Resource,
     ResourceCategory,
     ResourceCost,

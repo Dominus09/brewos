@@ -2,7 +2,7 @@
 
 Reglas obligatorias para PostgreSQL, esquema y migraciones.
 
-**Referencias:** [05 — Modelo de datos](../docs/05-data-model.md) · [16 — Administración de Producción](../docs/16-production-administration.md) · [ADR-0005](../docs/decisions/ADR-0005-resource-as-core-entity.md)
+**Referencias:** [05 — Modelo de datos](../docs/05-data-model.md) · [16 — Administración de Producción](../docs/16-production-administration.md) · [20 — Bootstrap](../docs/20-bootstrap-strategy.md) · [ADR-0005](../docs/decisions/ADR-0005-resource-as-core-entity.md) · [ADR-0007](../docs/decisions/ADR-0007-operational-identity-standard.md) · [ADR-0009](../docs/decisions/ADR-0009-bootstrap-strategy.md)
 
 ---
 
@@ -29,15 +29,17 @@ Reglas obligatorias para PostgreSQL, esquema y migraciones.
 
 ### Código visible (negocio)
 
-- Columna separada: `internal_code VARCHAR` (ej. `INS-ALC-096`)
-- Generado por reglas de configuración o secuencia por prefijo de tipo
+- Columna separada: `internal_code VARCHAR` (ej. `BREW-RES-000042` — [ADR-0007](../docs/decisions/ADR-0007-operational-identity-standard.md))
+- Generado **únicamente** por Identity Engine (Core Engine) — no por `code_prefix` en `resource_types`
 - **Único** por tenant/organización cuando aplique
 - Indexado para búsqueda; no es primary key
 
 ```text
 id (UUID)           → sistema, FK, API
-internal_code       → humano, etiquetas, reportes
+internal_code       → humano, etiquetas, reportes (BREW-* / DIS-YYYYMMDD-*)
 ```
+
+**Deprecado:** `resource_types.code_prefix` (`INS`, `BOT`, …). Eliminar en migración futura. Ver [20 — Bootstrap §8](../docs/20-bootstrap-strategy.md).
 
 ---
 
@@ -101,7 +103,17 @@ Ver [naming-conventions.md](naming-conventions.md). Resumen:
 3. Migraciones **reversibles** cuando sea posible (`upgrade` + `downgrade`)
 4. Una migración por cambio lógico (no mezclar «tabla recursos» + «tabla usuarios» sin relación)
 5. Revisar migración en PR con diff SQL legible
-6. Datos seed en migraciones separadas o scripts en `database/seeds/`
+6. Datos seed en scripts modulares en `database/seeds/` — ver [ADR-0009](../docs/decisions/ADR-0009-bootstrap-strategy.md)
+
+### Bootstrap y seeds
+
+| Regla | Detalle |
+|-------|---------|
+| Schema `brewos` | **Solo Alembic** — nunca en seeds |
+| Orden | `alembic upgrade head` → `bootstrap/verify` → `seeds/run_all.sql` |
+| Modularidad | Un archivo SQL = una responsabilidad |
+| Prohibido en seeds | `CREATE SCHEMA`, datos operacionales, config dinámica (categoría C) |
+| `code_prefix` | No poblar en seeds; deprecado |
 
 ### Flujo
 
@@ -171,4 +183,4 @@ Ver [16 — §10](../docs/16-production-administration.md):
 
 ---
 
-*Reglas de base de datos BrewOS — v1.0*
+*Reglas de base de datos BrewOS — v1.1 (ADR-0007, ADR-0009)*

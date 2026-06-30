@@ -4,7 +4,7 @@
 
 **Documentos relacionados:** [18 — Identidad operacional](18-operational-identity.md) · [ADR-0007](decisions/ADR-0007-operational-identity-standard.md) · [ADR-0008](decisions/ADR-0008-brewos-core-engine.md)
 
-**Estado:** Aceptado como pilar arquitectónico. Sin implementación en este sprint.
+**Estado:** CE-1 implementado (Identity + Event + Audit). Timeline, File, Label pendientes.
 
 ---
 
@@ -91,13 +91,36 @@ Módulo de negocio  →  orquesta  →  Core Engine  →  persistencia transvers
 | Anti-duplicados | `UNIQUE` + reserva atómica en transacción |
 | Prohibición UUID visible | Nunca devuelve ni deriva código desde `id` |
 
-**API interna futura (conceptual):**
+### Implementación CE-1 (backend)
 
 ```text
-IdentityEngine.assign_master_code(entity_type, *, tx) → str
-IdentityEngine.assign_operation_code(operation_type, *, occurred_at, tx) → str
-IdentityEngine.validate_prefix(prefix) → bool
+backend/app/core/
+├── identity/
+│   ├── engine.py              # IdentityEngine facade
+│   ├── prefix_registry.py     # Lee operational_code_prefixes
+│   ├── sequence_manager.py    # SELECT FOR UPDATE + operational_sequences
+│   └── code_generator.py      # BREW-RES-000001 / DIS-YYYYMMDD-NNN
+├── events/
+│   ├── event_types.py         # ResourceCreated, OperationalCodeGenerated, …
+│   └── event_engine.py        # Persiste domain_events
+└── audit/
+    └── audit_engine.py        # Deriva audit_log desde eventos
 ```
+
+**Uso interno (dentro de transacción de service):**
+
+```python
+from app.core.identity import IdentityEngine
+from app.core.events import EventEngine
+
+identity = IdentityEngine()
+code = identity.assign_master_code(session, "resource")  # → BREW-RES-000001
+dis = identity.assign_operation_code(session, prefix="DIS")  # → DIS-20260701-001
+
+EventEngine().emit_resource_created(session, entity_id=..., internal_code=code, after_data={...})
+```
+
+Smoke test: `python -m scripts.identity_smoke_test` desde `backend/` (tras migración 003 + seed 004).
 
 ---
 
@@ -409,8 +432,8 @@ Los **services de módulo** son el único punto que combina reglas de negocio + 
 
 | Tabla | Motor | Propósito |
 |-------|-------|-----------|
-| `operational_code_sequences` | Identity | Secuencia por prefijo (+ fecha) |
-| `operational_code_prefixes` | Identity | Registro de prefijos válidos |
+| `operational_sequences` | Identity | Secuencia transaccional por prefijo (+ fecha) |
+| `operational_code_prefixes` | Identity | Registro de prefijos válidos (seed 004) |
 | `domain_events` | Event | Log de eventos emitidos |
 | `audit_log` | Audit | Registro forense append-only |
 | `timeline_entries` | Timeline | Proyección materializada (opcional; puede ser vista) |
@@ -471,8 +494,8 @@ Las tablas de negocio existentes (`resources`, `resource_documents`, …) **perm
 
 | Fase | Motores | Prioridad |
 |------|---------|-----------|
-| **CE-1** | Identity + Event + Audit | Bloqueante para CRUD real |
-| **CE-2** | Timeline + File | Recurso 360, documentos |
+| **CE-1** | Identity + Event + Audit | **Implementado** — `backend/app/core/{identity,events,audit}/`, migración `003` |
+| **CE-2** | Timeline + File + DROP `code_prefix` | Recurso 360, documentos |
 | **CE-3** | Label (QR/PDF) | Taller y producción |
 | **CE-4** | Notification | Centro de Control alertas |
 | **CE-5** | Integration | Bsale, BrewNode |

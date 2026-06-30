@@ -12,6 +12,7 @@ Registro de decisiones arquitectónicas y de producto de BrewOS. Cada ADR es inm
 | [ADR-0006](ADR-0006-dynamic-production-configuration.md) | Configuración dinámica de producción | Aceptado |
 | [ADR-0007](ADR-0007-operational-identity-standard.md) | Estándar de identidad operacional | Aceptado |
 | [ADR-0008](ADR-0008-brewos-core-engine.md) | BrewOS Core Engine | Aceptado |
+| [ADR-0009](ADR-0009-bootstrap-strategy.md) | Estrategia de bootstrap modular | Aceptado |
 
 ## Formato
 
@@ -26,3 +27,4 @@ Cada ADR incluye: contexto, decisión, consecuencias, beneficios, riesgos y alte
 - [17 — Administración de Producción UX](../17-production-administration-ux.md)
 - [18 — Identidad operacional](../18-operational-identity.md)
 - [19 — Core Engine](../19-core-engine.md)
+- [20 — Bootstrap](../20-bootstrap-strategy.md)

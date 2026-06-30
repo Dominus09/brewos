@@ -160,7 +160,7 @@ Nueva entidad conceptual: agrupa la configuración de una operación productiva 
 | `sort_order` | Orden en filtros y wizard |
 | `business_line_id` | Opcional: tipo exclusivo de una línea |
 | `default_flags` | JSON: inventariable, consumible, cultivable, vendible, trazable, equipamiento |
-| `code_prefix` | Prefijo para código interno (`INS`, `BOT`, `SRV`) |
+| ~~`code_prefix`~~ | **Deprecado** (ADR-0007/0009). Identidad operacional vía `BREW-RES-*` (Identity Engine). Ver [20 — Bootstrap §8](20-bootstrap-strategy.md) |
 | `form_schema_id` | FK al esquema de formulario activo |
 | `status` | draft, active, archived |
 | `is_system` | Si proviene de plantilla base (no eliminable, solo archivable) |
