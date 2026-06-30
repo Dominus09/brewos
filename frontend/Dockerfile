@@ -1,4 +1,6 @@
 # syntax=docker/dockerfile:1
+# Imagen Docker para Coolify (Build Pack: Dockerfile).
+# Usa `next start` — alineado con next.config.ts sin output: "standalone".
 
 FROM node:20-alpine AS base
 RUN apk add --no-cache libc6-compat
@@ -26,10 +28,11 @@ RUN addgroup --system --gid 1001 nodejs && \
     adduser --system --uid 1001 nextjs
 
 COPY --from=builder /app/public ./public
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
+COPY --from=builder /app/package.json ./package.json
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 
 USER nextjs
 EXPOSE 3000
 
-CMD ["node", "server.js"]
+CMD ["npm", "run", "start"]

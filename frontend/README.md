@@ -50,14 +50,23 @@ npm run docker:run
 
 Ver guía completa: [docker/README.md](../docker/README.md)
 
-Resumen:
+### Nixpacks (recomendado)
 
-1. Recurso **Application** en Coolify
+| Campo | Valor |
+|-------|-------|
+| Build Pack | **Nixpacks** |
+| Base Directory | `frontend` |
+| Install / Build / Start | *(vacíos — ver `nixpacks.toml`)* |
+| Publish Directory | *(vacío)* |
+| Puerto | `3000` |
+
+Variables: `NEXT_PUBLIC_APP_URL=https://tv.quillotana.cl`, `PORT=3000`, `HOSTNAME=0.0.0.0`
+
+### Dockerfile (alternativa)
+
+1. Build Pack: **Dockerfile**
 2. Dockerfile: `frontend/Dockerfile`
 3. Base directory: `frontend`
-4. Variables: `NEXT_PUBLIC_APP_URL=https://tv.quillotana.cl`
-5. Puerto: **3000**
-6. Dominio: `tv.quillotana.cl` + HTTPS
 
 ## Stack
 

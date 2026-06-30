@@ -1,63 +1,84 @@
 # Docker — BrewOS
 
-Configuración de contenedores para despliegue en Coolify.
+Configuración de despliegue en Coolify.
 
-## Frontend (Next.js)
+## Opción recomendada: Nixpacks
 
-El Dockerfile vive en `frontend/Dockerfile` y usa `output: "standalone"` de Next.js.
+Para esta etapa, el frontend **no usa** `output: "standalone"`. Nixpacks ejecuta `npm run build` + `npm run start` sin configuración especial.
 
-### Build local
+### Coolify — Nixpacks
 
-```bash
-cd frontend
-docker build -t brewos-frontend .
-docker run -p 3000:3000 -e NEXT_PUBLIC_APP_URL=http://localhost:3000 brewos-frontend
-```
+| Campo | Valor |
+|-------|-------|
+| **Build Pack** | Nixpacks |
+| **Base Directory** | `frontend` |
+| **Install Command** | *(vacío — usa `npm ci` de `nixpacks.toml`)* |
+| **Build Command** | *(vacío — usa `npm run build` de `nixpacks.toml`)* |
+| **Start Command** | *(vacío — usa `npm run start` de `nixpacks.toml`)* |
+| **Publish Directory** | *(vacío — no es static export)* |
+| **Puerto** | `3000` |
 
-Abrir [http://localhost:3000](http://localhost:3000)
-
-## Coolify — Frontend
-
-### 1. Crear recurso
-
-1. En Coolify → **New Resource** → **Application**
-2. Conectar repositorio `brewos`
-3. **Build Pack:** Dockerfile
-4. **Dockerfile location:** `frontend/Dockerfile`
-5. **Base directory / Root:** `frontend` (si Coolify lo pide como subcarpeta)
-
-### 2. Variables de entorno
+### Variables de entorno
 
 | Variable | Valor |
 |----------|-------|
 | `NEXT_PUBLIC_APP_URL` | `https://tv.quillotana.cl` |
 | `PORT` | `3000` |
 | `NODE_ENV` | `production` |
+| `HOSTNAME` | `0.0.0.0` |
 
-### 3. Dominio
+### Dominio
 
-- Asignar dominio: `tv.quillotana.cl`
-- Activar HTTPS (Let's Encrypt)
+- Asignar: `tv.quillotana.cl`
+- HTTPS en Coolify (Let's Encrypt)
 
-### 4. Puerto
-
-- Puerto interno del contenedor: **3000**
-- Coolify proxy → contenedor:3000
-
-### 5. Deploy
-
-- Push a la rama configurada → Coolify build + deploy automático
-- Primer deploy: verificar logs de build (`npm run build` dentro del Dockerfile)
-
-### 6. Health check (opcional)
+### Health check (opcional)
 
 - Path: `/login`
-- Puerto: 3000
+- Puerto: `3000`
+
+---
+
+## Opción alternativa: Dockerfile
+
+Si prefieres Build Pack **Dockerfile**:
+
+| Campo | Valor |
+|-------|-------|
+| **Build Pack** | Dockerfile |
+| **Dockerfile location** | `frontend/Dockerfile` |
+| **Base Directory** | `frontend` |
+
+Build local:
+
+```bash
+cd frontend
+docker build -t brewos-frontend .
+docker run -p 3000:3000 \
+  -e NEXT_PUBLIC_APP_URL=http://localhost:3000 \
+  -e PORT=3000 \
+  brewos-frontend
+```
+
+---
+
+## Error 526 (Cloudflare)
+
+El **Error 526** no se corrige en el código del proyecto. Indica que Cloudflare (modo Full/Strict) no confía en el certificado SSL del servidor de origen (Coolify).
+
+Verificar en infraestructura:
+
+1. **Cloudflare SSL/TLS** → modo *Full* o *Full (strict)*
+2. **Coolify** → certificado Let's Encrypt activo para `tv.quillotana.cl`
+3. Si Cloudflare está en *Full (strict)*, el origen debe tener certificado válido (no autofirmado)
+4. Alternativa temporal: modo *Full* (no strict) mientras se provisiona el cert en Coolify
+5. Confirmar que el contenedor escucha en `0.0.0.0:3000` (ya configurado en `package.json`)
+
+---
 
 ## Notas
 
-- Sin backend en esta etapa: solo frontend estático/SSR de páginas placeholder
-- El login no autentica; redirige visualmente al Centro de Control
+- Sin backend en esta etapa — solo frontend Next.js
 - Futuro dominio: `brewos.quillotana.cl` — actualizar `NEXT_PUBLIC_APP_URL`
 
 ## Referencias
