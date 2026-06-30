@@ -85,6 +85,7 @@ backend/
 | `001_initial_resource_catalog` | `CREATE SCHEMA brewos` + catálogo base |
 | `002_resource_satellite_tables` | Satélites de recurso |
 | `003_core_engine_identity_events` | Core CE-1: prefijos, secuencias, eventos, auditoría |
+| `004_remove_resource_type_code_prefix` | DROP `code_prefix`; `internal_code` nullable en borradores |
 
 ```powershell
 cd backend

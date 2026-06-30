@@ -120,7 +120,15 @@ dis = identity.assign_operation_code(session, prefix="DIS")  # → DIS-20260701-
 EventEngine().emit_resource_created(session, entity_id=..., internal_code=code, after_data={...})
 ```
 
-Smoke test: `python -m scripts.identity_smoke_test` desde `backend/` (tras migración 003 + seed 004).
+### Implementación CE-2 (ResourceService)
+
+```text
+POST /api/v1/resources          → ResourceService.create_draft()     (sin internal_code)
+POST /api/v1/resources/{id}/publish → IdentityEngine + EventEngine + AuditEngine
+PATCH /api/v1/resources/{id}  → ResourceService.update()         (ResourceUpdated si active)
+```
+
+Regla: `internal_code` **solo al publicar**. Borradores tienen `internal_code = NULL`.
 
 ---
 
@@ -495,8 +503,8 @@ Las tablas de negocio existentes (`resources`, `resource_documents`, …) **perm
 | Fase | Motores | Prioridad |
 |------|---------|-----------|
 | **CE-1** | Identity + Event + Audit | **Implementado** — `backend/app/core/{identity,events,audit}/`, migración `003` |
-| **CE-2** | Timeline + File + DROP `code_prefix` | Recurso 360, documentos |
-| **CE-3** | Label (QR/PDF) | Taller y producción |
+| **CE-2 (actual)** | `ResourceService`, API `/api/v1/resources`, migración DROP `code_prefix` |
+| **CE-3** | Timeline + File | Recurso 360, documentos |
 | **CE-4** | Notification | Centro de Control alertas |
 | **CE-5** | Integration | Bsale, BrewNode |
 

@@ -4,20 +4,26 @@ from __future__ import annotations
 
 import uuid
 from datetime import datetime, timezone
-from typing import Any
+from typing import TYPE_CHECKING, Any
 
 from sqlalchemy.orm import Session
 
-from app.core.audit.audit_engine import AuditEngine
 from app.core.events.event_types import EventType
 from app.models.domain_event import DomainEvent
+
+if TYPE_CHECKING:
+    from app.core.audit.audit_engine import AuditEngine
 
 
 class EventEngine:
     """Persists domain events and optionally derives audit records."""
 
     def __init__(self, audit_engine: AuditEngine | None = None) -> None:
-        self._audit_engine = audit_engine or AuditEngine()
+        if audit_engine is None:
+            from app.core.audit.audit_engine import AuditEngine as _AuditEngine
+
+            audit_engine = _AuditEngine()
+        self._audit_engine = audit_engine
 
     def emit(
         self,

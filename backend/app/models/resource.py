@@ -14,7 +14,7 @@ from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMix
 class Resource(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     __tablename__ = "resources"
 
-    internal_code: Mapped[str] = mapped_column(String(50), nullable=False, unique=True)
+    internal_code: Mapped[str | None] = mapped_column(String(50), nullable=True, unique=True)
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     notes: Mapped[str | None] = mapped_column(Text, nullable=True)

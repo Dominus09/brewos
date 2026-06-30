@@ -4,7 +4,7 @@ API REST de BrewOS construida con **FastAPI**, **SQLAlchemy 2.x**, **Alembic** y
 
 ## Estado
 
-**CE-1 — Core Engine base.** Identity + Event + Audit implementados. Catálogo de recursos + satélites. Sin endpoints de negocio ni autenticación.
+**CE-2 — ResourceService mínimo.** Primer flujo de negocio: borrador → publicar con Identity + Event + Audit. API `/api/v1/resources`. Sin auth ni frontend.
 
 ## Base de datos y schema
 
@@ -104,8 +104,9 @@ $env:DATABASE_URL = "postgresql://user:pass@host:5432/analytics"
 | `001_initial_resource_catalog` | `CREATE SCHEMA brewos` + catálogo base |
 | `002_resource_satellite_tables` | Tablas satélite de recursos |
 | `003_core_engine_identity_events` | `operational_code_prefixes`, `operational_sequences`, `domain_events`, `audit_log` |
+| `004_remove_resource_type_code_prefix` | DROP `code_prefix`; `resources.internal_code` nullable (borradores) |
 
-## Core Engine (CE-1)
+## Core Engine (CE-1 + CE-2)
 
 Motores en `app/core/` — consumo **solo desde services**, nunca desde routers directamente.
 
@@ -114,19 +115,38 @@ Motores en `app/core/` — consumo **solo desde services**, nunca desde routers 
 | Identity | `core/identity/` | `BREW-RES-000001`, `DIS-YYYYMMDD-NNN` vía DB |
 | Event | `core/events/` | `domain_events` tipados |
 | Audit | `core/audit/` | `audit_log` derivado de eventos |
+| ResourceService | `services/resource_service.py` | Orquesta draft → publish → update |
 
-```python
-from app.core.identity import IdentityEngine
+### API Recursos (`/api/v1/resources`)
 
-identity = IdentityEngine()
-with session.begin():
-    code = identity.assign_master_code(session, "resource")
+| Método | Ruta | Descripción |
+|--------|------|-------------|
+| `GET` | `/api/v1/resources` | Listado (filtros: `status`, `resource_type_id`) |
+| `GET` | `/api/v1/resources/{id}` | Detalle por UUID |
+| `POST` | `/api/v1/resources` | Crear borrador (`internal_code` = null) |
+| `POST` | `/api/v1/resources/{id}/publish` | Publicar → asigna `BREW-RES-*` |
+| `PATCH` | `/api/v1/resources/{id}` | Actualizar (emite evento si ya publicado) |
+
+**Crear borrador (ejemplo):**
+
+```json
+{
+  "name": "Alcohol Etílico 96°",
+  "resource_type_id": "<uuid-tipo-supply>",
+  "unit_id": "<uuid-litro>",
+  "description": "Insumo base destilería",
+  "is_inventoriable": true,
+  "is_consumable": true
+}
 ```
 
-Smoke test (tras migración + seed 004):
+**Publicar:** `POST /api/v1/resources/{id}/publish` (sin body). Respuesta incluye `internal_code` y `status: "active"`.
+
+Smoke tests:
 
 ```powershell
 .\.venv\Scripts\python.exe -m scripts.identity_smoke_test
+.\.venv\Scripts\python.exe -m scripts.resource_smoke_test
 ```
 
 Ver [19 — Core Engine](../docs/19-core-engine.md).

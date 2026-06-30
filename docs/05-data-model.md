@@ -105,7 +105,7 @@ Entidad central del sistema. Todo insumo, botánico, envase, equipamiento, herra
 
 | Grupo de campos | Ejemplos conceptuales |
 |-----------------|----------------------|
-| Identidad | `name`, `internal_code`, `description`, `notes` |
+| Identidad | `name`, `internal_code` (NULL en borrador; asignado al publicar), `description`, `notes` |
 | Clasificación | `resource_type_id`, `resource_subtype_id`, `resource_category_id`, `business_line_id` |
 | Medida | `unit_id` |
 | Comportamiento | `is_inventoriable`, `is_consumable`, `is_cultivable`, `is_equipment`, `is_sellable`, `is_traceable` |
@@ -130,7 +130,7 @@ Tipos principales de la taxonomía de recursos (ej. supply, botanical, equipment
 | `business_line_id` (opcional) |
 | `default_flags` (JSONB: flags por defecto al crear recurso) |
 | `status`, `is_system` |
-| ~~`code_prefix`~~ | **Deprecado** — ver [20 — Bootstrap §8](20-bootstrap-strategy.md). Identidad vía `BREW-RES-*` (Identity Engine) |
+| ~~`code_prefix`~~ | **Eliminado** (migración `004`). Identidad vía `operational_code_prefixes` + Identity Engine |
 
 **Para qué sirve:** Define comportamiento por defecto y subtipos válidos. Plantilla inicial en seed `003_resource_types.sql` (categoría B); editable en UI (ADR-0006). **No** define el código visible del recurso.
 
@@ -473,7 +473,8 @@ Ver [20 — Bootstrap](20-bootstrap-strategy.md) y [ADR-0009](decisions/ADR-0009
 |------|--------|
 | **Fase 1** | `business_lines`, `resource_types`, `resource_subtypes`, `resource_categories`, `units`, `suppliers`, `resources` |
 | **Fase 2** | `resource_suppliers`, `resource_costs`, `resource_documents`, `resource_photos`, `resource_tags`, `resource_tag_links` |
-| **CE-1 (actual)** | `operational_code_prefixes`, `operational_sequences`, `domain_events`, `audit_log` |
+| **CE-1** | `operational_code_prefixes`, `operational_sequences`, `domain_events`, `audit_log` |
+| **CE-2 (actual)** | `ResourceService`, `resources.internal_code` nullable, API recursos |
 | Fase 3 | `dynamic_properties`, `dynamic_forms`, `dynamic_form_versions`, `dynamic_form_fields` |
 | Fase 4 | `production_processes`, `production_process_steps`, `configurable_states`, `industry_templates` |
 | Fase 5+ | Inventario, recetas, lotes, usuarios |

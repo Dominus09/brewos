@@ -39,7 +39,7 @@ id (UUID)           → sistema, FK, API
 internal_code       → humano, etiquetas, reportes (BREW-* / DIS-YYYYMMDD-*)
 ```
 
-**Deprecado:** `resource_types.code_prefix` (`INS`, `BOT`, …). Eliminar en migración futura. Ver [20 — Bootstrap §8](../docs/20-bootstrap-strategy.md).
+**Eliminado (migración 004):** `resource_types.code_prefix`. Ver [20 — Bootstrap §8](../docs/20-bootstrap-strategy.md).
 
 ---
 

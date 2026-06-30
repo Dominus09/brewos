@@ -26,7 +26,6 @@ class ResourceType(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
         nullable=True,
     )
     default_flags: Mapped[dict | None] = mapped_column(JSONB, nullable=True)
-    code_prefix: Mapped[str | None] = mapped_column(String(10), nullable=True)
     status: Mapped[str] = mapped_column(String(20), nullable=False, default="active")
     is_system: Mapped[bool] = mapped_column(Boolean, nullable=False, default=False)
 
