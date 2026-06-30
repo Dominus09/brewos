@@ -39,6 +39,7 @@ BrewOS permite administrar todo lo que se usa, se produce y se aprende en una fu
 
 ```
 brewos/
+├── .foundation/    # Metodología y reglas de desarrollo (obligatorio)
 ├── docs/           # Visión, arquitectura, roadmap y reglas
 ├── backend/        # API FastAPI (futuro)
 ├── frontend/       # App Next.js (futuro)
@@ -54,6 +55,9 @@ brewos/
 
 | Documento | Contenido |
 |-----------|-----------|
+| [BREWOS_MANIFESTO.md](BREWOS_MANIFESTO.md) | Filosofía y visión del producto |
+| [CONTRIBUTING.md](CONTRIBUTING.md) | Guía para contribuir |
+| [.foundation/](.foundation/) | Metodología y reglas de desarrollo |
 | [01 — Visión](docs/01-vision.md) | Propósito y filosofía del proyecto |
 | [02 — Arquitectura](docs/02-architecture.md) | Stack, capas y separación BrewCore / BrewNode |
 | [03 — Roadmap](docs/03-roadmap.md) | Sprints planificados |
@@ -69,11 +73,14 @@ brewos/
 | [13 — Taxonomía de Recursos](docs/13-resource-taxonomy.md) | Tipos, subtipos y comportamiento |
 | [14 — Ciclo de vida de Recursos](docs/14-resource-lifecycle.md) | Estados y transiciones |
 | [15 — Recursos UI/UX](docs/15-resources-ui-ux.md) | Especificación UX del módulo Recursos |
+| [16 — Administración de Producción](docs/16-production-administration.md) | Capa configurable multi-industria (Sprint 4) |
+| [17 — Administración de Producción UX](docs/17-production-administration-ux.md) | Especificación funcional y UX de configuración dinámica |
+| [ADR-0006 — Configuración dinámica](docs/decisions/ADR-0006-dynamic-production-configuration.md) | Decisión: producción administrable sin código |
 | [Decisiones (ADR)](docs/decisions/) | Registro de decisiones arquitectónicas |
 
 ## Estado actual
 
-**Sprint 1 — Design System.** Design System y UI Foundation definidos. Documentación funcional de navegación y principios de producto cerrada (docs 10–11, ADRs).
+**Sprint de implementación — Fundación técnica.** Discovery, UX y arquitectura cerrados (docs 10–17, ADR-0006). Metodología de desarrollo en [.foundation/](.foundation/). Próximo paso: actualizar `docs/05-data-model.md` y esquema PostgreSQL.
 
 ## Licencia y propiedad
 

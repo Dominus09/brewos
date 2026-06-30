@@ -127,7 +127,7 @@ Un recurso puede ser — según su tipo y configuración — **consumible**, **i
 
 ## 18. El tipo de recurso define su comportamiento
 
-La taxonomía (`resource_types`, `resource_subtypes`) determina qué campos son obligatorios, qué módulos participan y qué acciones están permitidas. Ver [13 — Taxonomía](13-resource-taxonomy.md).
+La taxonomía configurada en **Administración de Producción** determina qué campos son obligatorios, qué módulos participan y qué acciones están permitidas. Ver [13 — Taxonomía](13-resource-taxonomy.md) (plantilla seed) · [ADR-0006](decisions/ADR-0006-dynamic-production-configuration.md).
 
 ---
 
@@ -143,14 +143,49 @@ Todo costo de lote, receta o reporte debe poder explicarse hasta el recurso y su
 
 ---
 
+## 21. Todo lo configurable se administra desde la interfaz
+
+Tipos, categorías, propiedades, formularios, procesos, estados y líneas de negocio se definen en **Configuración → Administración de Producción**. No en código ni en archivos de despliegue.
+
+Ver [ADR-0006](decisions/ADR-0006-dynamic-production-configuration.md) · [17 — UX Administración de Producción](17-production-administration-ux.md).
+
+---
+
+## 22. El código define el motor, no las líneas de negocio
+
+El software implementa el **motor** (recurso, inventario, recetas, lotes, formularios dinámicos, validación). Las **líneas de negocio** (destilería, cosmética, turismo…) son datos de configuración, no ramas del repositorio.
+
+---
+
+## 23. Las nuevas industrias se agregan por configuración, no por desarrollo
+
+Incorporar velas, mermeladas, conservas, merchandising u otra operación artesanal no debe requerir sprint de desarrollo ni despliegue de código. Debe bastar con plantilla de industria + ajuste administrativo.
+
+---
+
+## 24. Los formularios dinámicos deben versionarse
+
+Cambiar un esquema de formulario crea una **nueva versión**. Los registros existentes conservan la versión con la que fueron creados. Publicar sin versionar está prohibido.
+
+---
+
+## 25. La configuración debe tener límites para no romper la operación
+
+Cuotas de tipos, campos, condiciones y profundidad de categorías protegen la experiencia del operador. El administrador recibe advertencias antes de alcanzar límites que comprometan la operación.
+
+Ver [17 — Administración de Producción UX §12](17-production-administration-ux.md).
+
+---
+
 ## Jerarquía de principios
 
 En caso de conflicto aparente, aplicar en este orden:
 
 1. Integridad de datos (principios 1, 2, 3, 6, 7, 8, 16, 19, 20)
 2. Operabilidad manual (principios 11, 12, 15)
-3. Experiencia de usuario (principios 10, 13)
-4. Escalabilidad técnica (principio 14)
+3. Configuración gobernada (principios 21, 24, 25)
+4. Experiencia de usuario (principios 10, 13)
+5. Escalabilidad técnica (principios 14, 22, 23)
 
 ---
 
@@ -158,11 +193,11 @@ En caso de conflicto aparente, aplicar en este orden:
 
 | Momento | Acción |
 |---------|--------|
-| Diseño de feature | Verificar que respeta principios 1–8 y 16–20 |
-| Code review | Rechazar duplicación de datos y atajos que salten Recursos |
-| Sprint planning | Ordenar módulos según dependencias (Recursos → Inventario → …) |
+| Diseño de feature | Verificar que respeta principios 1–8, 16–20 y 21–25 |
+| Code review | Rechazar duplicación de datos, taxonomía en código y atajos que salten Recursos |
+| Sprint planning | Ordenar módulos según dependencias (Administración de Producción → Recursos → Inventario → …) |
 | ADR nuevo | Referenciar principio(s) afectados |
 
 ---
 
-*Documento v1.1 — Principios de producto BrewOS / Insular Origins*
+*Documento v1.2 — Principios de producto BrewOS / Insular Origins (ADR-0006)*

@@ -9,6 +9,7 @@ Registro de decisiones arquitectónicas y de producto de BrewOS. Cada ADR es inm
 | [ADR-0003](ADR-0003-control-center-not-dashboard.md) | Centro de Control, no Dashboard | Aceptado |
 | [ADR-0004](ADR-0004-laboratory-module.md) | Módulo Laboratorio en lugar de Knowledge Base | Aceptado |
 | [ADR-0005](ADR-0005-resource-as-core-entity.md) | Recurso como entidad central | Aceptado |
+| [ADR-0006](ADR-0006-dynamic-production-configuration.md) | Configuración dinámica de producción | Aceptado |
 
 ## Formato
 
@@ -19,3 +20,5 @@ Cada ADR incluye: contexto, decisión, consecuencias, beneficios, riesgos y alte
 - [10 — Mapa de navegación](../10-navigation-map.md)
 - [11 — Principios de producto](../11-product-principles.md)
 - [12 — Dominio de Recursos](../12-resource-domain.md)
+- [16 — Administración de Producción](../16-production-administration.md)
+- [17 — Administración de Producción UX](../17-production-administration-ux.md)

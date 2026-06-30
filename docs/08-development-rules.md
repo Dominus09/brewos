@@ -143,7 +143,7 @@ Los módulos base deben funcionar al 100 % con entrada manual.
 ### Documentación
 
 - Actualizar `docs/` cuando cambie arquitectura o modelo de datos
-- Registrar decisiones importantes en `foundation/` o journal
+- Registrar decisiones importantes en `docs/decisions/` (ADR) o `.foundation/`
 
 ---
 

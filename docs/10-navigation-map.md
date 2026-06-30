@@ -471,45 +471,79 @@ Ver [ADR-0004](decisions/ADR-0004-laboratory-module.md).
 
 | Campo | Definición |
 |-------|------------|
-| **Propósito** | Administración del sistema, usuarios, parámetros globales e integraciones futuras. |
-| **Pregunta que responde** | ¿Cómo se administra BrewOS? |
+| **Propósito** | Administración del sistema, usuarios, parámetros globales, integraciones y **configuración dinámica de producción artesanal**. |
+| **Pregunta que responde** | ¿Cómo se administra BrewOS y cómo se define *qué* produce la operación sin tocar código? |
 
-### Submenús
+Ver [ADR-0006](decisions/ADR-0006-dynamic-production-configuration.md) · [16 — Administración de Producción](16-production-administration.md) · [17 — UX Administración de Producción](17-production-administration-ux.md).
+
+### Submenús — Configuración general
 
 | Submenú | Descripción |
 |---------|-------------|
+| Empresa | Datos de Insular Origins en el sistema |
 | Usuarios | Cuentas de acceso |
-| Roles | Permisos por módulo |
-| Empresa / Proyecto | Datos de Insular Origins en el sistema |
-| Parámetros | Ajustes globales (moneda, formatos, defaults) |
-| Tema visual | Claro / oscuro, preferencias de interfaz |
 | Seguridad | Políticas de contraseña, sesión (futuro) |
-| Integraciones futuras | BrewNode, ESP32, APIs externas |
+| Respaldos | Copias de seguridad y restauración |
+| Integraciones | BrewNode, ESP32, APIs externas (futuro) |
+
+### Submenús — Administración de Producción
+
+Subgrupo bajo **Configuración** (`/settings/production`). Permite **administrar visualmente la expansión futura de BrewOS** — nuevas industrias, tipos, formularios y procesos — **sin modificar código ni desplegar desarrollo**.
+
+| Submenú | Ruta (conceptual) | Descripción |
+|---------|-------------------|-------------|
+| Panel de inicio | `/settings/production` | Resumen, accesos rápidos, importar plantilla |
+| Líneas de negocio | `/settings/production/business-lines` | Operaciones productivas (destilería, cosmética, turismo…) |
+| Plantillas de industria | `/settings/production/templates` | Paquetes importables de configuración |
+| Tipos de recursos | `/settings/production/resource-types` | Tipos maestros configurables (sustituyen taxonomía fija) |
+| Familias | `/settings/production/resource-families` | Agrupación transversal de tipos |
+| Categorías | `/settings/production/categories` | Jerarquía libre de clasificación |
+| Subcategorías | `/settings/production/subcategories` | Subdivisiones dentro de cada tipo |
+| Unidades | `/settings/production/units` | Unidades de medida y conversiones |
+| Propiedades dinámicas | `/settings/production/properties` | Catálogo global de campos reutilizables |
+| Formularios | `/settings/production/forms` | Composición versionada de propiedades |
+| Procesos productivos | `/settings/production/processes` | Secuencias de etapas de elaboración |
+| Estados | `/settings/production/states` | Estados y transiciones por dominio |
+| Tipos de productos | `/settings/production/product-types` | Clasificación de outputs (gin, vela, tour…) |
+| Tipos de lotes | `/settings/production/batch-types` | Plantillas de lote en Producción |
+| Tipos de documentos | `/settings/production/document-types` | Fichas técnicas, seguridad, certificados |
+
+**Industrias soportadas por configuración (sin código):** destilería, cervecería, agua purificada, cosmética, velas, hidrolatos, aceites esenciales, mermeladas, conservas, charcutería, productos gourmet, turismo, talleres, merchandising y futuras líneas artesanales.
 
 ### Acciones principales
 
-- Gestionar usuarios y roles
-- Configurar parámetros del proyecto
-- Ajustar tema y preferencias
+- Gestionar usuarios, empresa y seguridad
+- Definir líneas de negocio e importar plantillas de industria
+- Crear y publicar tipos de recursos, categorías y formularios dinámicos
+- Configurar procesos, estados y tipos de producto / lote
 - Preparar integraciones (cuando existan)
 
 ### Qué datos usa
 
 - `users`, `roles`, parámetros de sistema
+- Tablas de configuración de producción — ver [16 — Administración de Producción](16-production-administration.md)
 
 ### Módulos conectados
 
 | Módulo | Tipo de conexión |
 |--------|------------------|
-| Todos | Permisos de acceso por módulo |
-| Laboratorio | BrandBook y documentación de marca |
+| **Todos** | Permisos de acceso por módulo |
+| **Recursos** | Consume tipos, formularios, categorías, estados |
+| **Inventario** | Consume unidades y estados de stock |
+| **Recetas** | Consume tipos de producto y propiedades de receta |
+| **Producción** | Consume procesos, tipos de lote y formularios de etapa |
+| **Trazabilidad** | Hereda configuración de lote y recursos |
+| **Laboratorio** | Tipos de documento; BrandBook |
 
 ### Estado de desarrollo sugerido
 
 | Fase | Sprint | Notas |
 |------|--------|-------|
 | Usuarios y roles | Sprint 2 | Login y permisos básicos |
-| Resto | Sprint 3+ | Parámetros e integraciones progresivas |
+| Shell Configuración | Sprint 3–4 | Navegación y placeholders |
+| Administración de Producción v1 | Sprint 4–5 | Tipos, propiedades, formularios — [17 — UX](17-production-administration-ux.md) |
+| Procesos, estados, plantillas | Sprint 5–6 | Procesos, lotes, importación |
+| Motor dinámico en operación | Sprint 6+ | Recursos y Producción consumen configuración |
 
 ---
 
@@ -568,8 +602,8 @@ Ver [ADR-0004](decisions/ADR-0004-laboratory-module.md).
 | Jardín Botánico | 8 |
 | Laboratorio | 9 |
 | Reportes | 7–9 (progresivo) |
-| Configuración | 2 (usuarios) + continuo |
+| Configuración | 2 (usuarios) + 4–6 (Administración de Producción) |
 
 ---
 
-*Documento v1.1 — Mapa de navegación BrewOS (módulo Recursos)*
+*Documento v1.2 — Mapa de navegación BrewOS (Administración de Producción — ADR-0006)*
