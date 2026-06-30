@@ -1,10 +1,10 @@
 import type { Metadata } from "next";
 import { Inter, JetBrains_Mono, Plus_Jakarta_Sans } from "next/font/google";
 
-import { ThemeProvider } from "@/components/theme/theme-provider";
-import { TooltipProvider } from "@/components/ui/tooltip";
+import { AppProviders } from "@/providers/app-providers";
+import { siteConfig } from "@/config/site";
 
-import "./globals.css";
+import "@/styles/globals.css";
 
 const jakarta = Plus_Jakarta_Sans({
   variable: "--font-jakarta",
@@ -25,8 +25,35 @@ const jetbrains = JetBrains_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "BrewOS",
-  description: "Sistema de Gestión de Producción Artesanal — Insular Origins",
+  metadataBase: new URL(siteConfig.url),
+  title: {
+    default: siteConfig.name,
+    template: `%s · ${siteConfig.name}`,
+  },
+  description: `${siteConfig.tagline} — ${siteConfig.company}`,
+  applicationName: siteConfig.name,
+  keywords: [
+    "BrewOS",
+    "Insular Origins",
+    "producción artesanal",
+    "gestión",
+    "inventario",
+    "trazabilidad",
+  ],
+  authors: [{ name: siteConfig.author }],
+  creator: siteConfig.company,
+  openGraph: {
+    type: "website",
+    locale: "es_CL",
+    url: siteConfig.url,
+    siteName: siteConfig.name,
+    title: siteConfig.name,
+    description: siteConfig.tagline,
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function RootLayout({
@@ -41,9 +68,7 @@ export default function RootLayout({
       suppressHydrationWarning
     >
       <body className="min-h-full">
-        <ThemeProvider>
-          <TooltipProvider>{children}</TooltipProvider>
-        </ThemeProvider>
+        <AppProviders>{children}</AppProviders>
       </body>
     </html>
   );

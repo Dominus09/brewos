@@ -1,40 +1,66 @@
-# Docker
+# Docker — BrewOS
 
-Configuración de contenedores y despliegue para BrewOS en **Coolify**.
+Configuración de contenedores para despliegue en Coolify.
 
-## Propósito
+## Frontend (Next.js)
 
-Esta carpeta centralizará la infraestructura como código:
+El Dockerfile vive en `frontend/Dockerfile` y usa `output: "standalone"` de Next.js.
 
-- `Dockerfile` para backend (FastAPI) y frontend (Next.js)
-- `docker-compose.yml` para desarrollo local
-- Configuración de servicios (PostgreSQL, reverse proxy)
-- Variables de entorno de ejemplo (`.env.example`)
-- Notas de despliegue en Coolify
+### Build local
 
-## Estado actual
-
-**No implementado.** Sin `docker-compose` ni Dockerfiles en esta etapa.
-
-## Entornos
-
-| Entorno | Dominio / notas |
-|---------|-----------------|
-| Desarrollo | Local con Docker Compose |
-| Staging / temporal | tv.quillotana.cl |
-| Producción futura | brewos.quillotana.cl |
-
-## Estructura prevista (futuro)
-
+```bash
+cd frontend
+docker build -t brewos-frontend .
+docker run -p 3000:3000 -e NEXT_PUBLIC_APP_URL=http://localhost:3000 brewos-frontend
 ```
-docker/
-├── docker-compose.yml
-├── docker-compose.dev.yml
-├── backend.Dockerfile
-├── frontend.Dockerfile
-└── coolify/          # Notas y config específica de Coolify
-```
+
+Abrir [http://localhost:3000](http://localhost:3000)
+
+## Coolify — Frontend
+
+### 1. Crear recurso
+
+1. En Coolify → **New Resource** → **Application**
+2. Conectar repositorio `brewos`
+3. **Build Pack:** Dockerfile
+4. **Dockerfile location:** `frontend/Dockerfile`
+5. **Base directory / Root:** `frontend` (si Coolify lo pide como subcarpeta)
+
+### 2. Variables de entorno
+
+| Variable | Valor |
+|----------|-------|
+| `NEXT_PUBLIC_APP_URL` | `https://tv.quillotana.cl` |
+| `PORT` | `3000` |
+| `NODE_ENV` | `production` |
+
+### 3. Dominio
+
+- Asignar dominio: `tv.quillotana.cl`
+- Activar HTTPS (Let's Encrypt)
+
+### 4. Puerto
+
+- Puerto interno del contenedor: **3000**
+- Coolify proxy → contenedor:3000
+
+### 5. Deploy
+
+- Push a la rama configurada → Coolify build + deploy automático
+- Primer deploy: verificar logs de build (`npm run build` dentro del Dockerfile)
+
+### 6. Health check (opcional)
+
+- Path: `/login`
+- Puerto: 3000
+
+## Notas
+
+- Sin backend en esta etapa: solo frontend estático/SSR de páginas placeholder
+- El login no autentica; redirige visualmente al Centro de Control
+- Futuro dominio: `brewos.quillotana.cl` — actualizar `NEXT_PUBLIC_APP_URL`
 
 ## Referencias
 
-- [Arquitectura — Despliegue](../docs/02-architecture.md)
+- [frontend/README.md](../frontend/README.md)
+- [02 — Arquitectura](../docs/02-architecture.md)

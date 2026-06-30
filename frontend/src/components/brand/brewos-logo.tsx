@@ -3,6 +3,7 @@ import { cn } from "@/lib/utils";
 type BrewOSLogoProps = {
   className?: string;
   size?: "sm" | "md" | "lg";
+  showWordmark?: boolean;
 };
 
 const sizeClasses = {
@@ -11,7 +12,11 @@ const sizeClasses = {
   lg: "text-3xl",
 };
 
-export function BrewOSLogo({ className, size = "md" }: BrewOSLogoProps) {
+export function BrewOSLogo({
+  className,
+  size = "md",
+  showWordmark = true,
+}: BrewOSLogoProps) {
   return (
     <div className={cn("flex items-center gap-2.5", className)}>
       <div
@@ -34,10 +39,17 @@ export function BrewOSLogo({ className, size = "md" }: BrewOSLogoProps) {
           <line x1="16" y1="12" x2="20" y2="12" />
         </svg>
       </div>
-      <span className={cn("font-[family-name:var(--font-jakarta)] font-bold tracking-tight", sizeClasses[size])}>
-        <span className="text-foreground">Brew</span>
-        <span className="text-primary">OS</span>
-      </span>
+      {showWordmark ? (
+        <span
+          className={cn(
+            "font-[family-name:var(--font-jakarta)] font-bold tracking-tight",
+            sizeClasses[size],
+          )}
+        >
+          <span className="text-foreground">Brew</span>
+          <span className="text-primary">OS</span>
+        </span>
+      ) : null}
     </div>
   );
 }

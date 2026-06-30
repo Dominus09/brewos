@@ -1,25 +1,30 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 
 import { BrewOSLogo } from "@/components/brand/brewos-logo";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { siteConfig } from "@/config/site";
+
+export const metadata: Metadata = {
+  title: "Iniciar sesión",
+  description: `Acceso a ${siteConfig.name}`,
+};
 
 export default function LoginPage() {
   return (
-    <div className="flex min-h-full flex-col bg-background">
+    <div className="flex min-h-svh flex-col bg-background">
       <div className="flex flex-1 items-center justify-center px-4 py-12 sm:px-6">
         <div className="w-full max-w-[400px] space-y-8">
           <div className="space-y-3 text-center">
             <div className="flex justify-center">
               <BrewOSLogo size="lg" />
             </div>
-            <p className="text-sm text-muted-foreground">
-              Sistema de Gestión de Producción Artesanal
-            </p>
+            <p className="text-sm text-muted-foreground">{siteConfig.tagline}</p>
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-6 shadow-sm sm:p-8">
+          <div className="rounded-xl border border-border bg-card p-6 sm:p-8">
             <div className="space-y-5">
               <div className="space-y-2">
                 <Label htmlFor="usuario">Usuario</Label>
@@ -43,7 +48,10 @@ export default function LoginPage() {
                 />
               </div>
 
-              <Button render={<Link href="/dashboard" />} className="h-10 w-full">
+              <Button
+                render={<Link href={siteConfig.defaultRoute} />}
+                className="h-10 w-full"
+              >
                 Iniciar sesión
               </Button>
             </div>
@@ -53,9 +61,12 @@ export default function LoginPage() {
 
       <footer className="border-t border-border px-4 py-6 text-center">
         <div className="space-y-1 text-xs text-muted-foreground">
-          <p>Versión 0.1.0 Alpha</p>
-          <p>Powered by Insular Origins</p>
-          <p>Crafted by Carlos Romero Ramírez</p>
+          <p>
+            {siteConfig.name} · Versión {siteConfig.version}
+          </p>
+          <p>{siteConfig.tagline}</p>
+          <p>Powered by {siteConfig.company}</p>
+          <p>Crafted by {siteConfig.author}</p>
         </div>
       </footer>
     </div>

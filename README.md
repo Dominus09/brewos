@@ -68,6 +68,7 @@ brewos/
 | [12 — Dominio de Recursos](docs/12-resource-domain.md) | Definición y atributos del Recurso |
 | [13 — Taxonomía de Recursos](docs/13-resource-taxonomy.md) | Tipos, subtipos y comportamiento |
 | [14 — Ciclo de vida de Recursos](docs/14-resource-lifecycle.md) | Estados y transiciones |
+| [15 — Recursos UI/UX](docs/15-resources-ui-ux.md) | Especificación UX del módulo Recursos |
 | [Decisiones (ADR)](docs/decisions/) | Registro de decisiones arquitectónicas |
 
 ## Estado actual

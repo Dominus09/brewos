@@ -1,59 +1,102 @@
 # Frontend — BrewOS
 
-Aplicación web de BrewOS: **Next.js**, **TypeScript**, **Tailwind CSS v4**, **shadcn/ui**, **Lucide Icons**.
+Aplicación web de BrewOS. Sprint de despliegue: UI completa sin backend.
 
-## Estado
+## Requisitos
 
-**UI Foundation (Sprint 1)** — Pantallas visuales sin backend, autenticación ni datos reales.
+- Node.js 20+
+- npm 10+
 
-## Inicio rápido
+## Ejecutar en local
 
 ```bash
 cd frontend
 npm install
+cp .env.example .env.local
 npm run dev
 ```
 
-Abrir [http://localhost:3000](http://localhost:3000)
+Abrir [http://localhost:3000](http://localhost:3000) → redirige a **Login**.
+
+El botón «Iniciar sesión» redirige al **Centro de Control** (sin autenticación real).
+
+## Scripts
+
+| Comando | Descripción |
+|---------|-------------|
+| `npm run dev` | Servidor de desarrollo |
+| `npm run build` | Build de producción |
+| `npm run start` | Servidor producción (tras build) |
+| `npm run lint` | ESLint |
+| `npm run typecheck` | TypeScript sin emitir |
+| `npm run docker:build` | Imagen Docker local |
+| `npm run docker:run` | Contenedor en puerto 3000 |
+
+## Build de producción
+
+```bash
+npm run build
+npm run start
+```
+
+O con Docker:
+
+```bash
+npm run docker:build
+npm run docker:run
+```
+
+## Despliegue en Coolify
+
+Ver guía completa: [docker/README.md](../docker/README.md)
+
+Resumen:
+
+1. Recurso **Application** en Coolify
+2. Dockerfile: `frontend/Dockerfile`
+3. Base directory: `frontend`
+4. Variables: `NEXT_PUBLIC_APP_URL=https://tv.quillotana.cl`
+5. Puerto: **3000**
+6. Dominio: `tv.quillotana.cl` + HTTPS
+
+## Stack
+
+- Next.js 15
+- TypeScript
+- Tailwind CSS v4
+- shadcn/ui
+- Lucide React
+- next-themes (oscuro por defecto)
+- React Hook Form + Zod (instalados, sin uso aún)
+
+## Rutas
 
 | Ruta | Pantalla |
 |------|----------|
-| `/login` | Login |
-| `/dashboard` | Centro de Control (módulos) |
-| `/dashboard/[module]` | Placeholder por módulo |
-| `/design-system` | Showcase de componentes |
+| `/` | → `/login` |
+| `/login` | Login visual |
+| `/control-center` | Centro de Control |
+| `/resources` … `/settings` | Módulos placeholder |
 
 ## Estructura
 
 ```
 src/
-├── app/
-│   ├── login/              # Pantalla de acceso (solo UI)
-│   ├── (shell)/            # Layout con sidebar
-│   │   ├── dashboard/      # Centro de Control
-│   │   └── design-system/  # Componentes base
-│   ├── layout.tsx          # Fuentes, tema, providers
-│   └── globals.css         # Tokens BrewOS
-├── components/
-│   ├── brand/              # Logo
-│   ├── dashboard/          # ModuleCard
-│   ├── design-system/      # EmptyState, LoadingState
-│   ├── layout/             # Sidebar, Header
-│   ├── theme/              # Dark/light
-│   └── ui/                 # shadcn/ui
-└── lib/
-    └── modules.ts          # Definición de módulos
+├── app/              # App Router
+├── components/       # UI compartida + shadcn
+├── config/           # site, navigation
+├── features/         # Por dominio
+├── hooks/
+├── layouts/          # AppShell
+├── lib/
+├── providers/
+├── services/
+├── styles/
+└── types/
 ```
 
-## Decisiones de diseño
+## Producción
 
-- **Modo oscuro por defecto** — operación tipo panel de control (Grafana, Home Assistant)
-- **Sidebar shadcn** — colapsable en desktop, drawer en móvil
-- **Sin datos mock** — placeholders y empty states únicamente
-- **Tokens en CSS** — colores del [Design System](../docs/09-design-system.md) en `globals.css`
-- **Route group `(shell)`** — layout compartido sin afectar `/login`
+URL objetivo: [https://tv.quillotana.cl](https://tv.quillotana.cl)
 
-## Referencias
-
-- [09 — Design System](../docs/09-design-system.md)
-- [assets/colors/tokens.json](../assets/colors/tokens.json)
+Sin backend en esta etapa — solo frontend visual.
