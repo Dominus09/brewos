@@ -16,6 +16,12 @@ class Settings(BaseSettings):
     app_env: str = "development"
     app_name: str = "BrewOS API"
 
+    @property
+    def database_schema(self) -> str:
+        from app.core.database_schema import DATABASE_SCHEMA
+
+        return DATABASE_SCHEMA
+
 
 @lru_cache
 def get_settings() -> Settings:

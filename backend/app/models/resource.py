@@ -76,3 +76,18 @@ class Resource(UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin, Base):
     unit: Mapped["Unit"] = relationship(
         back_populates="resources",
     )
+    resource_suppliers: Mapped[list["ResourceSupplier"]] = relationship(
+        back_populates="resource",
+    )
+    resource_costs: Mapped[list["ResourceCost"]] = relationship(
+        back_populates="resource",
+    )
+    resource_documents: Mapped[list["ResourceDocument"]] = relationship(
+        back_populates="resource",
+    )
+    resource_photos: Mapped[list["ResourcePhoto"]] = relationship(
+        back_populates="resource",
+    )
+    tag_links: Mapped[list["ResourceTagLink"]] = relationship(
+        back_populates="resource",
+    )

@@ -2,7 +2,7 @@
 
 Reglas obligatorias para el backend FastAPI + Python.
 
-**Referencias:** [02 — Arquitectura](../docs/02-architecture.md) · [architecture-rules.md](architecture-rules.md)
+**Referencias:** [02 — Arquitectura](../docs/02-architecture.md) · [architecture-rules.md](architecture-rules.md) · [ADR-0008](../docs/decisions/ADR-0008-brewos-core-engine.md) · [19 — Core Engine](../docs/19-core-engine.md)
 
 ---
 
@@ -24,38 +24,28 @@ Reglas obligatorias para el backend FastAPI + Python.
 ```
 backend/
 ├── app/
-│   ├── main.py                 # FastAPI app, montaje de routers
-│   ├── core/
-│   │   ├── config.py           # Settings desde env
-│   │   ├── security.py         # Auth, JWT, permisos
-│   │   ├── dependencies.py     # Depends() reutilizables
-│   │   └── exceptions.py       # Excepciones HTTP mapeadas
-│   ├── api/
-│   │   └── v1/
-│   │       ├── router.py       # Agregador v1
-│   │       └── routers/
-│   │           ├── resources.py
-│   │           ├── inventory.py
-│   │           ├── config.py   # Administración de producción
-│   │           └── ...
-│   ├── services/
-│   │   ├── resource_service.py
-│   │   └── config_service.py
+│   ├── main.py
+│   ├── core/                   # Config + BrewOS Core Engine
+│   │   ├── config.py
+│   │   ├── database_schema.py
+│   │   ├── dependencies.py
+│   │   ├── exceptions.py
+│   │   ├── identity/           # Identity Engine
+│   │   ├── events/             # Event Engine
+│   │   ├── audit/              # Audit Engine
+│   │   ├── timeline/           # Timeline Engine
+│   │   ├── files/              # File Engine
+│   │   ├── labels/             # QR / Label Engine
+│   │   ├── notifications/      # (futuro)
+│   │   └── integrations/       # (futuro)
+│   ├── api/v1/routers/         # HTTP delgado
+│   ├── services/               # Orquestan core + repositories
 │   ├── repositories/
-│   │   ├── resource_repository.py
-│   │   └── base_repository.py
 │   ├── models/
-│   │   ├── resource.py
-│   │   └── base.py             # Mixins: timestamps, soft delete
 │   ├── schemas/
-│   │   ├── resource.py         # ResourceCreate, ResourceRead, ...
-│   │   └── common.py           # Pagination, ErrorResponse
-│   └── domain/                 # Reglas puras (opcional v1)
+│   └── domain/
 ├── tests/
-│   ├── unit/
-│   └── integration/
 ├── alembic/
-├── pyproject.toml
 └── README.md
 ```
 
@@ -78,6 +68,9 @@ backend/
 - Escribir SQL
 - Aplicar reglas de negocio («si no hay stock, rechazar»)
 - Acceder al ORM directamente
+- Generar `internal_code` o códigos de operación
+- Escribir en `audit_log` o `timeline_entries` directamente
+- Subir archivos sin File Engine
 - Más de ~30 líneas por endpoint sin justificación
 
 ### Services (`services/`)
@@ -86,7 +79,8 @@ backend/
 
 - Lógica de negocio y orquestación
 - Validaciones semánticas (unicidad, transiciones de estado, permisos)
-- Coordinar varios repositories en una transacción
+- Coordinar repositories + **Core Engine** en una transacción
+- Emitir eventos de dominio vía Event Engine
 - Lanzar excepciones de dominio (`ResourceNotFound`, `InvalidTransition`)
 
 **Ejemplo correcto:**
@@ -95,9 +89,27 @@ backend/
 ResourceService.create(data):
   → validar tipo existe en config
   → validar flags según tipo
+  → IdentityEngine.assign_master_code("resource")
   → repository.create(...)
-  → registrar evento de timeline
+  → EventEngine.emit(ResourceCreated)
+  → (handlers) AuditEngine + TimelineEngine
 ```
+
+**Nunca:**
+
+- Asignar `internal_code` sin Identity Engine
+- Insertar auditoría o timeline manualmente
+- Importar lógica de otro módulo sin pasar por contrato claro
+
+### BrewOS Core Engine (`core/identity`, `core/events`, …)
+
+**Responsabilidad:**
+
+- Capacidades transversales: identidad, eventos, auditoría, timeline, archivos, QR
+- Sin reglas de negocio de industria (gin, cerveza, velas…)
+- Consumido por services; no expone HTTP
+
+Ver [19 — Core Engine](../docs/19-core-engine.md).
 
 ### Repositories (`repositories/`)
 
@@ -134,9 +146,10 @@ ResourceService.create(data):
 ### Core (`core/`)
 
 - Configuración centralizada (`pydantic-settings`)
-- Auth y permisos
+- Auth y permisos (`security.py` — futuro)
 - Dependencias FastAPI compartidas
 - Mapeo excepción → HTTP status
+- **BrewOS Core Engine:** identity, events, audit, timeline, files, labels (ver doc 19)
 
 ---
 
@@ -180,20 +193,26 @@ ResourceService.create(data):
 | Raw SQL sin repository | Sin abstracción |
 | Secrets en código | Usar variables de entorno |
 | Endpoints sin schema Pydantic | Sin contrato |
+| Código operacional fuera de Identity Engine | Rompe ADR-0007 |
+| Auditoría/timeline en router o service sin evento | Rompe ADR-0008 |
+| `core/` importando `services/` | Dependencia invertida |
 
 ---
 
 ## Checklist backend (PR)
 
-- [ ] Router delgado
-- [ ] Lógica en service
+- [ ] Router delgado — un service por endpoint
+- [ ] Lógica en service de módulo
+- [ ] Side effects transversales vía Core Engine
+- [ ] Códigos solo desde Identity Engine
+- [ ] Eventos tipados para mutaciones significativas
 - [ ] SQL solo en repository
 - [ ] Schemas Create/Read separados
 - [ ] Excepciones mapeadas a HTTP
 - [ ] OpenAPI coherente
-- [ ] Tests unitarios del service
+- [ ] Tests unitarios del service + motores core afectados
 - [ ] Sin reglas de negocio hardcodeadas (ADR-0006)
 
 ---
 
-*Reglas de backend BrewOS — v1.0*
+*Reglas de backend BrewOS — v1.1 (ADR-0008)*

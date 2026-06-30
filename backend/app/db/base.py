@@ -2,14 +2,28 @@
 
 import uuid
 from datetime import datetime
+from typing import Any
 
-from sqlalchemy import DateTime, func
+from sqlalchemy import DateTime, MetaData, func
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column
 
+from app.core.database_schema import DATABASE_SCHEMA
+
+brewos_metadata = MetaData(schema=DATABASE_SCHEMA)
+
 
 class Base(DeclarativeBase):
-    pass
+    """All BrewOS ORM models inherit schema brewos via shared metadata."""
+
+    metadata = brewos_metadata
+
+
+def brewos_table_args(*constraints: Any) -> tuple[Any, ...]:
+    """Combine constraints/indexes with the brewos schema for models that define __table_args__."""
+    if constraints:
+        return (*constraints, {"schema": DATABASE_SCHEMA})
+    return ({"schema": DATABASE_SCHEMA},)
 
 
 class UUIDPrimaryKeyMixin:

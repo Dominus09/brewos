@@ -2,6 +2,40 @@
 
 Reglas unificadas de nomenclatura. **UI en español; código y base de datos en inglés** (ADR-0001).
 
+**Identidad operacional:** códigos visibles, prefijos, QR y reportes — ver [18 — Identidad operacional](../docs/18-operational-identity.md) y [ADR-0007](../docs/decisions/ADR-0007-operational-identity-standard.md).
+
+---
+
+## Identidad operacional (códigos visibles)
+
+Norma oficial en [18 — Identidad operacional](../docs/18-operational-identity.md). Resumen:
+
+| Elemento | Convención | Ejemplo |
+|----------|------------|---------|
+| Entidades maestras | `BREW-{FAMILIA}-{NNNNNN}` | `BREW-RES-000001` |
+| Operaciones | `{PREFIJO}-{YYYYMMDD}-{NNN}` | `DIS-20260701-001` |
+| Columna en BD | `internal_code` | No es PK; único por entidad |
+| Identificador técnico | `id` (UUID) | **Nunca visible en UI** |
+| API response | Siempre `id` + `internal_code` | Frontend muestra solo `internal_code` |
+| Búsqueda humana | Por `internal_code` | No por UUID |
+| Inmutabilidad | Código no cambia tras publicación | — |
+| Reinicio secuencia | Solo operaciones diarias | Maestros nunca reinician |
+
+### Prefijos maestros (registro oficial)
+
+| Familia | Prefijo |
+|---------|---------|
+| Recursos | `BREW-RES` |
+| Recetas | `BREW-REC` |
+| Versiones receta | `BREW-REV` |
+| Proveedores | `BREW-SUP` |
+| Usuarios | `BREW-USR` |
+| Clientes | `BREW-CLI` |
+| Botánicos / plantas | `BREW-BOT` / `BREW-PLT` |
+| Líneas de negocio | `BREW-BUS` |
+
+Nuevos prefijos requieren actualización del doc 18 o ADR.
+
 ---
 
 ## Base de datos (PostgreSQL)
@@ -73,7 +107,7 @@ Reglas unificadas de nomenclatura. **UI en español; código y base de datos en 
 | Variables Python | snake_case | `filtered_resources` |
 | Env vars | UPPER_SNAKE | `NEXT_PUBLIC_API_URL`, `DATABASE_URL` |
 | Códigos de negocio config | snake_case inglés | `finished_product`, `cosmetic_supply` |
-| Códigos visibles recurso | UPPER con guiones | `INS-ALC-096` |
+| Códigos visibles (operacionales) | `BREW-*` o prefijo operación | `BREW-RES-000042`, `DIS-20260701-001` |
 
 ---
 
@@ -117,7 +151,9 @@ Alinear nombres entre capas; documentar mapeo si difieren.
 | `/api/v1/Resource` | `/api/v1/resources` |
 | `tipoRecurso` en código | `resourceType` |
 | Labels en inglés en UI | español |
+| Mostrar UUID al usuario | `internal_code` (doc 18) |
+| Prefijos ad-hoc (`INS-`, `LOT-`) | `BREW-RES-`, `DIS-YYYYMMDD-` (doc 18) |
 
 ---
 
-*Convenciones de nombres BrewOS — v1.0*
+*Convenciones de nombres BrewOS — v1.1 (ADR-0007)*

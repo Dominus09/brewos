@@ -2,7 +2,7 @@
 
 Reglas obligatorias de arquitectura para frontend, backend y base de datos.
 
-**Referencias:** [02 — Arquitectura](../docs/02-architecture.md) · [ADR-0005](../docs/decisions/ADR-0005-resource-as-core-entity.md) · [ADR-0006](../docs/decisions/ADR-0006-dynamic-production-configuration.md)
+**Referencias:** [02 — Arquitectura](../docs/02-architecture.md) · [ADR-0005](../docs/decisions/ADR-0005-resource-as-core-entity.md) · [ADR-0006](../docs/decisions/ADR-0006-dynamic-production-configuration.md) · [ADR-0008](../docs/decisions/ADR-0008-brewos-core-engine.md) · [19 — Core Engine](../docs/19-core-engine.md)
 
 ---
 
@@ -18,15 +18,19 @@ Reglas obligatorias de arquitectura para frontend, backend y base de datos.
 ├─────────────────────────────────────────────────────────┤
 │  API REST (FastAPI routers · schemas · auth)            │
 ├─────────────────────────────────────────────────────────┤
-│  Dominio / Servicios (lógica de negocio · validación)   │
+│  Servicios de módulo (ResourceService · BatchService…)   │
+├─────────────────────────────────────────────────────────┤
+│  BrewOS Core Engine (identity · events · audit · …)     │
 ├─────────────────────────────────────────────────────────┤
 │  Repositorios (acceso a datos · queries)                │
 ├─────────────────────────────────────────────────────────┤
-│  Persistencia (PostgreSQL · migraciones)                │
+│  Persistencia (PostgreSQL · schema brewos)              │
 └─────────────────────────────────────────────────────────┘
 ```
 
 **Regla de dependencia:** las capas superiores dependen de las inferiores. Nunca al revés.
+
+**Regla Core Engine:** `services/` y `features/` → `core/` → `repositories/`. El Core Engine **nunca** importa services de módulo ni routers.
 
 ---
 
@@ -87,16 +91,35 @@ backend/
 
 ### Routers
 
-- Reciben request, validan con schema Pydantic, llaman service, devuelven response
+- Reciben request, validan con schema Pydantic, llaman **un** service, devuelven response
 - **Sin SQL** en routers
 - **Sin lógica de negocio** en routers (no `if stock < 0` en el endpoint)
+- **Sin side effects transversales:** no generar códigos, no escribir auditoría, no insertar timeline, no subir archivos directamente
 - Un router por recurso REST (`resources.py`, `batches.py`, `config.py`)
 
-### Services
+### Services (módulo de negocio)
 
-- Orquestan repositorios y aplican reglas de negocio
+- Orquestan repositorios, **Core Engine** y reglas de negocio
 - Transacciones cuando varias tablas deben ser atómicas
+- Emiten eventos vía Event Engine; no duplican auditoría ni timeline
 - Lanzan excepciones de dominio traducidas a HTTP en capa API
+
+### BrewOS Core Engine (`core/`)
+
+Infraestructura transversal — ver [19 — Core Engine](../docs/19-core-engine.md):
+
+| Motor | Uso desde services |
+|-------|-------------------|
+| `identity/` | Asignar `internal_code` y códigos de operación |
+| `events/` | Emitir `ResourceCreated`, `ProductionStarted`, etc. |
+| `audit/` | Handler post-evento (no llamada directa desde router) |
+| `timeline/` | Proyecciones 360° |
+| `files/` | Store y metadatos de documentos/fotos |
+| `labels/` | QR y plantillas de etiqueta |
+| `notifications/` | Alertas (futuro) |
+| `integrations/` | Bsale, BrewNode (futuro) |
+
+**Prohibido:** router llama Identity + Audit + File en el mismo endpoint sin pasar por service.
 
 ### Repositories
 
@@ -176,9 +199,10 @@ Cambio breaking en API → nueva versión `/api/v2/` o extensión backward-compa
 - [ ] ¿Hay router + service + repository + schemas?
 - [ ] ¿Las reglas de negocio están en service/domain, no en router?
 - [ ] ¿Hay tipos/DTO separados del modelo de persistencia?
-- [ ] ¿Se respetan ADR-0005 y ADR-0006?
+- [ ] ¿Se respetan ADR-0005, ADR-0006 y ADR-0008?
+- [ ] ¿Side effects transversales van por Core Engine (eventos), no por router?
 - [ ] ¿Se actualizó documentación si cambia el modelo o la navegación?
 
 ---
 
-*Reglas de arquitectura BrewOS — v1.0*
+*Reglas de arquitectura BrewOS — v1.1 (ADR-0008)*

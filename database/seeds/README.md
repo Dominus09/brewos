@@ -2,6 +2,8 @@
 
 Scripts de datos iniciales para PostgreSQL. **No se ejecutan automáticamente** al iniciar FastAPI.
 
+**Base de datos:** `analytics` · **Schema:** `brewos`
+
 ## Cuándo ejecutar
 
 1. Base de datos vacía creada y accesible.
@@ -25,9 +27,11 @@ psql "$DATABASE_URL" -f database/seeds/001_base_seed.sql
 ### Desde Windows (PowerShell)
 
 ```powershell
-$env:DATABASE_URL = "postgresql://user:pass@localhost:5432/brewos"
+$env:DATABASE_URL = "postgresql://user:pass@host:5432/analytics"
 psql $env:DATABASE_URL -f database/seeds/001_base_seed.sql
 ```
+
+Los `INSERT` usan el prefijo `brewos.` (ej. `brewos.business_lines`).
 
 ## Idempotencia
 

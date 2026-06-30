@@ -75,12 +75,29 @@ brewos/
 | [15 — Recursos UI/UX](docs/15-resources-ui-ux.md) | Especificación UX del módulo Recursos |
 | [16 — Administración de Producción](docs/16-production-administration.md) | Capa configurable multi-industria (Sprint 4) |
 | [17 — Administración de Producción UX](docs/17-production-administration-ux.md) | Especificación funcional y UX de configuración dinámica |
+| [18 — Identidad operacional](docs/18-operational-identity.md) | **Pilar:** códigos, iconografía, colores y reglas QR/reportes/API |
+| [19 — Core Engine](docs/19-core-engine.md) | **Pilar:** identidad, eventos, auditoría, timeline, archivos, QR, integraciones |
 | [ADR-0006 — Configuración dinámica](docs/decisions/ADR-0006-dynamic-production-configuration.md) | Decisión: producción administrable sin código |
+| [ADR-0007 — Identidad operacional](docs/decisions/ADR-0007-operational-identity-standard.md) | Decisión: separación UUID vs código visible |
+| [ADR-0008 — Core Engine](docs/decisions/ADR-0008-brewos-core-engine.md) | Decisión: núcleo transversal de infraestructura de dominio |
 | [Decisiones (ADR)](docs/decisions/) | Registro de decisiones arquitectónicas |
+
+## Pilares del proyecto
+
+Documentos que gobiernan decisiones durante años — no son guías opcionales:
+
+| Pilar | Documento |
+|-------|-----------|
+| Entidad central | [ADR-0005](docs/decisions/ADR-0005-resource-as-core-entity.md) · [12 — Dominio de Recursos](docs/12-resource-domain.md) |
+| Configuración sin código | [ADR-0006](docs/decisions/ADR-0006-dynamic-production-configuration.md) · [16 — Administración de Producción](docs/16-production-administration.md) |
+| Identidad operacional | [ADR-0007](docs/decisions/ADR-0007-operational-identity-standard.md) · [18 — Identidad operacional](docs/18-operational-identity.md) |
+| Core Engine (infraestructura transversal) | [ADR-0008](docs/decisions/ADR-0008-brewos-core-engine.md) · [19 — Core Engine](docs/19-core-engine.md) |
+| Principios de producto | [11 — Principios de producto](docs/11-product-principles.md) |
+| Design System | [09 — Design System](docs/09-design-system.md) |
 
 ## Estado actual
 
-**Sprint de implementación — Fundación técnica.** Discovery, UX y arquitectura cerrados (docs 10–17, ADR-0006). Metodología de desarrollo en [.foundation/](.foundation/). Próximo paso: actualizar `docs/05-data-model.md` y esquema PostgreSQL.
+**Sprint de arquitectura funcional.** Pilares: Recursos (ADR-0005), Configuración dinámica (ADR-0006), Identidad operacional (ADR-0007 / doc 18), **Core Engine (ADR-0008 / doc 19)**. Fundación PostgreSQL/FastAPI en curso. Metodología en [.foundation/](.foundation/).
 
 ## Licencia y propiedad
 

@@ -12,6 +12,8 @@ import sqlalchemy as sa
 from alembic import op
 from sqlalchemy.dialects import postgresql
 
+from app.core.database_schema import DATABASE_SCHEMA as SCHEMA
+
 revision: str = "001_initial_resource_catalog"
 down_revision: Union[str, None] = None
 branch_labels: Union[str, Sequence[str], None] = None
@@ -20,6 +22,7 @@ depends_on: Union[str, Sequence[str], None] = None
 
 def upgrade() -> None:
     op.execute('CREATE EXTENSION IF NOT EXISTS "pgcrypto"')
+    op.execute('CREATE SCHEMA IF NOT EXISTS "brewos"')
 
     op.create_table(
         "business_lines",
@@ -49,6 +52,7 @@ def upgrade() -> None:
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("code", name="uq_business_lines_code"),
+        schema=SCHEMA,
     )
 
     op.create_table(
@@ -78,6 +82,7 @@ def upgrade() -> None:
         ),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
         sa.PrimaryKeyConstraint("id"),
+        schema=SCHEMA,
     )
 
     op.create_table(
@@ -117,6 +122,7 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("code", name="uq_units_code"),
+        schema=SCHEMA,
     )
 
     op.create_table(
@@ -158,11 +164,13 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("code", name="uq_resource_types_code"),
+        schema=SCHEMA,
     )
     op.create_index(
         "ix_resource_types_business_line_id",
         "resource_types",
         ["business_line_id"],
+        schema=SCHEMA,
     )
 
     op.create_table(
@@ -204,11 +212,13 @@ def upgrade() -> None:
             "code",
             name="uq_resource_subtypes_resource_type_id_code",
         ),
+        schema=SCHEMA,
     )
     op.create_index(
         "ix_resource_subtypes_resource_type_id",
         "resource_subtypes",
         ["resource_type_id"],
+        schema=SCHEMA,
     )
 
     op.create_table(
@@ -256,16 +266,19 @@ def upgrade() -> None:
             name="fk_resource_categories_resource_type_id",
         ),
         sa.PrimaryKeyConstraint("id"),
+        schema=SCHEMA,
     )
     op.create_index(
         "ix_resource_categories_resource_type_id",
         "resource_categories",
         ["resource_type_id"],
+        schema=SCHEMA,
     )
     op.create_index(
         "ix_resource_categories_business_line_id",
         "resource_categories",
         ["business_line_id"],
+        schema=SCHEMA,
     )
 
     op.create_table(
@@ -337,28 +350,29 @@ def upgrade() -> None:
         ),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("internal_code", name="uq_resources_internal_code"),
+        schema=SCHEMA,
     )
-    op.create_index("ix_resources_internal_code", "resources", ["internal_code"])
-    op.create_index("ix_resources_resource_type_id", "resources", ["resource_type_id"])
-    op.create_index("ix_resources_business_line_id", "resources", ["business_line_id"])
+    op.create_index("ix_resources_internal_code", "resources", ["internal_code"], schema=SCHEMA)
+    op.create_index("ix_resources_resource_type_id", "resources", ["resource_type_id"], schema=SCHEMA)
+    op.create_index("ix_resources_business_line_id", "resources", ["business_line_id"], schema=SCHEMA)
 
 
 def downgrade() -> None:
-    op.drop_index("ix_resources_business_line_id", table_name="resources")
-    op.drop_index("ix_resources_resource_type_id", table_name="resources")
-    op.drop_index("ix_resources_internal_code", table_name="resources")
-    op.drop_table("resources")
+    op.drop_index("ix_resources_business_line_id", table_name="resources", schema=SCHEMA)
+    op.drop_index("ix_resources_resource_type_id", table_name="resources", schema=SCHEMA)
+    op.drop_index("ix_resources_internal_code", table_name="resources", schema=SCHEMA)
+    op.drop_table("resources", schema=SCHEMA)
 
-    op.drop_index("ix_resource_categories_business_line_id", table_name="resource_categories")
-    op.drop_index("ix_resource_categories_resource_type_id", table_name="resource_categories")
-    op.drop_table("resource_categories")
+    op.drop_index("ix_resource_categories_business_line_id", table_name="resource_categories", schema=SCHEMA)
+    op.drop_index("ix_resource_categories_resource_type_id", table_name="resource_categories", schema=SCHEMA)
+    op.drop_table("resource_categories", schema=SCHEMA)
 
-    op.drop_index("ix_resource_subtypes_resource_type_id", table_name="resource_subtypes")
-    op.drop_table("resource_subtypes")
+    op.drop_index("ix_resource_subtypes_resource_type_id", table_name="resource_subtypes", schema=SCHEMA)
+    op.drop_table("resource_subtypes", schema=SCHEMA)
 
-    op.drop_index("ix_resource_types_business_line_id", table_name="resource_types")
-    op.drop_table("resource_types")
+    op.drop_index("ix_resource_types_business_line_id", table_name="resource_types", schema=SCHEMA)
+    op.drop_table("resource_types", schema=SCHEMA)
 
-    op.drop_table("units")
-    op.drop_table("suppliers")
-    op.drop_table("business_lines")
+    op.drop_table("units", schema=SCHEMA)
+    op.drop_table("suppliers", schema=SCHEMA)
+    op.drop_table("business_lines", schema=SCHEMA)

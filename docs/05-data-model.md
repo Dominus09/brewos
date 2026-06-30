@@ -8,6 +8,37 @@ Modelo conceptual de BrewOS. **No incluye migraciones ni SQL** — define entida
 
 ---
 
+## Ubicación en PostgreSQL
+
+BrewOS **no utiliza una base de datos independiente**. Todas las tablas viven en la base compartida **`analytics`**, dentro del schema dedicado **`brewos`**:
+
+```text
+analytics (database)
+├── analytics
+├── app
+├── bsale
+├── distribuidora
+├── brewos          ← BrewOS (resources, recipes, inventory, …)
+└── public
+```
+
+Referencias físicas: `analytics.brewos.resources`, `analytics.brewos.resource_types`, etc.
+
+**Nunca** en `public` ni en schemas de otros sistemas (`bsale`, `distribuidora`, …).
+
+### Por qué esta decisión
+
+| Motivo | Beneficio |
+|--------|-----------|
+| Una instancia PostgreSQL | Un solo punto de backup, monitoreo y administración |
+| Schema dedicado `brewos` | Aislamiento lógico sin duplicar infraestructura |
+| Convivencia con otros sistemas | Consultas cruzadas controladas entre schemas cuando se necesiten |
+| Escalabilidad futura | Nuevos sistemas (`erp`, `ai`, `iot`) agregan su propio schema sin nueva DB |
+
+La constante de aplicación es `DATABASE_SCHEMA = "brewos"` en `backend/app/core/database_schema.py`.
+
+---
+
 ## Diagrama conceptual simplificado
 
 ```
@@ -136,9 +167,9 @@ Etiquetas transversales para búsqueda y agrupación (ej. `orgánico`, `experime
 
 | Campos conceptuales |
 |---------------------|
-| `name`, `color` (opcional), `status` |
+| `name`, `slug`, `color` (opcional), `description` |
 
-**Para qué sirve:** Clasificación flexible sin alterar taxonomía formal.
+**Para qué sirve:** Clasificación flexible sin alterar taxonomía formal. `slug` único entre registros activos.
 
 ---
 
@@ -148,9 +179,9 @@ Tabla de unión muchos-a-muchos entre `resources` y `resource_tags`.
 
 | Campos conceptuales |
 |---------------------|
-| `resource_id`, `resource_tag_id` |
+| `resource_id`, `tag_id` |
 
-**Para qué sirve:** Asignar múltiples etiquetas a un recurso.
+**Para qué sirve:** Asignar múltiples etiquetas a un recurso. Par `(resource_id, tag_id)` único entre activos.
 
 ---
 
@@ -185,9 +216,10 @@ Relación muchos-a-muchos: un recurso puede tener varios proveedores; un proveed
 
 | Campos conceptuales |
 |---------------------|
-| `resource_id`, `supplier_id`, `is_primary`, `supplier_code`, `last_purchase_price` |
+| `resource_id`, `supplier_id`, `supplier_sku`, `is_primary` |
+| `last_purchase_price`, `currency`, `lead_time_days`, `notes` |
 
-**Para qué sirve:** Proveedor principal vs alternativos; historial de referencia de compra.
+**Para qué sirve:** Proveedor principal vs alternativos; referencia de compra y SKU del proveedor. Un solo `is_primary` activo por recurso.
 
 ---
 
@@ -197,7 +229,8 @@ Historial y referencias de costo por recurso.
 
 | Campos conceptuales |
 |---------------------|
-| `resource_id`, `cost_type` (purchase, average, estimated), `amount`, `currency`, `valid_from`, `source` |
+| `resource_id`, `cost_type` (purchase, average, estimated), `amount`, `currency` |
+| `source`, `effective_date`, `notes` |
 
 **Para qué sirve:** Separar costo de compra, promedio calculado y valor estimado sin duplicar en `resources`. El promedio puede derivarse de inventario y sincronizarse aquí.
 
@@ -209,7 +242,8 @@ Documentos adjuntos a un recurso: ficha técnica, ficha de seguridad, certificad
 
 | Campos conceptuales |
 |---------------------|
-| `resource_id`, `document_type`, `title`, `file_ref` o FK a `documents`, `uploaded_at` |
+| `resource_id`, `document_type`, `title`, `file_url`, `file_name`, `mime_type` |
+| `uploaded_at`, `notes` |
 
 **Para qué sirve:** Cumplimiento (`requires_tech_sheet`, `requires_safety_sheet`) y consulta desde Recursos o Laboratorio.
 
@@ -221,9 +255,9 @@ Imágenes asociadas a un recurso (producto, equipo, botánico).
 
 | Campos conceptuales |
 |---------------------|
-| `resource_id`, `title`, `file_ref`, `sort_order`, `is_primary`, `uploaded_at` |
+| `resource_id`, `photo_url`, `file_name`, `is_primary`, `caption`, `uploaded_at` |
 
-**Para qué sirve:** Galería visual en ficha de recurso, trazabilidad y catálogo comercial.
+**Para qué sirve:** Galería visual en ficha de recurso. Una sola foto `is_primary` activa por recurso.
 
 ---
 
@@ -394,12 +428,12 @@ Archivos del Laboratorio y bitácora del proyecto.
 
 | Fase | Tablas |
 |------|--------|
-| **Fase 1 (actual)** | `business_lines`, `resource_types`, `resource_subtypes`, `resource_categories`, `units`, `suppliers`, `resources` |
-| Fase 2 | `resource_suppliers`, `resource_costs`, `resource_documents`, `resource_photos`, `resource_tags`, `resource_tag_links` |
+| **Fase 1** | `business_lines`, `resource_types`, `resource_subtypes`, `resource_categories`, `units`, `suppliers`, `resources` |
+| **Fase 2 (actual)** | `resource_suppliers`, `resource_costs`, `resource_documents`, `resource_photos`, `resource_tags`, `resource_tag_links` |
 | Fase 3 | `dynamic_properties`, `dynamic_forms`, `dynamic_form_versions`, `dynamic_form_fields` |
 | Fase 4 | `production_processes`, `production_process_steps`, `configurable_states`, `industry_templates` |
 | Fase 5+ | Inventario, recetas, lotes, usuarios |
 
-Migraciones en `backend/alembic/versions/`. Seeds en `database/seeds/`.
+Migraciones en `backend/alembic/versions/`. Seeds en `database/seeds/`. Todas las tablas bajo **`analytics.brewos`**.
 
-**Referencias:** [13 — Taxonomía](13-resource-taxonomy.md) · [14 — Ciclo de vida](14-resource-lifecycle.md) · [16 — Administración de Producción](16-production-administration.md)
+**Referencias:** [13 — Taxonomía](13-resource-taxonomy.md) · [14 — Ciclo de vida](14-resource-lifecycle.md) · [16 — Administración de Producción](16-production-administration.md) · [Database README](../database/README.md)

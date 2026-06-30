@@ -177,15 +177,85 @@ Ver [17 — Administración de Producción UX §12](17-production-administration
 
 ---
 
+## 26. Dos identidades: técnica y operacional
+
+El sistema usa **UUID** internamente y **códigos operacionales** para personas. Son capas distintas; nunca se sustituyen una por la otra.
+
+Ver [ADR-0007](decisions/ADR-0007-operational-identity-standard.md) · [18 — Identidad operacional](18-operational-identity.md).
+
+---
+
+## 27. El operador nunca ve un UUID
+
+Ninguna pantalla, reporte, etiqueta ni exportación muestra el `id` técnico. El identificador humano es siempre el código operacional (`internal_code` o código de operación con fecha).
+
+---
+
+## 28. Los códigos operacionales son inmutables
+
+Una vez asignado y publicado, el código no cambia ni se reutiliza. El nombre y la descripción pueden evolucionar; el código es la ancla de trazabilidad.
+
+---
+
+## 29. Consistencia visual en toda la operación
+
+Iconografía, colores de módulo y formato de códigos siguen un único estándar en UI, QR, PDF y Excel. No se inventan prefijos por módulo ni por desarrollador.
+
+Ver [18 — Identidad operacional §5–6](18-operational-identity.md).
+
+---
+
+## 30. Maestros con secuencia continua; operaciones con fecha
+
+Recursos, proveedores y catálogos usan secuencia `BREW-*` sin reinicio. Lotes, destilaciones y órdenes usan prefijo + fecha + secuencia diaria. La distinción es obligatoria.
+
+Ver [18 — Identidad operacional §4 y §7](18-operational-identity.md).
+
+---
+
+## 31. La lógica transversal vive en el Core Engine
+
+Identidad operacional, eventos, auditoría, timeline, archivos, QR y notificaciones se implementan **una sola vez** en el Core Engine — no por módulo.
+
+Ver [ADR-0008](decisions/ADR-0008-brewos-core-engine.md) · [19 — Core Engine](19-core-engine.md).
+
+---
+
+## 32. Los módulos emiten eventos; no duplican side effects
+
+Un `ResourceService` o `BatchService` emite eventos de dominio; no escribe auditoría, timeline ni notificaciones ad-hoc. Los side effects transversales son consecuencia del Event Engine.
+
+---
+
+## 33. Auditoría y timeline son consecuencia del evento
+
+No existen inserts manuales de auditoría o timeline en routers ni en services de módulo. El Audit Engine y Timeline Engine procesan eventos tipados.
+
+---
+
+## 34. Los códigos visibles se generan solo desde Identity Engine
+
+Ningún service, repository ni router asigna `internal_code` ni códigos de operación por su cuenta. Único punto: Identity Engine (ADR-0007).
+
+---
+
+## 35. Archivos y etiquetas siguen una política común
+
+Documentos, fotos, MSDS, facturas y plantillas QR/etiqueta pasan por File Engine y Label Engine — mismas reglas de metadatos, almacenamiento y formato.
+
+---
+
 ## Jerarquía de principios
 
 En caso de conflicto aparente, aplicar en este orden:
 
 1. Integridad de datos (principios 1, 2, 3, 6, 7, 8, 16, 19, 20)
-2. Operabilidad manual (principios 11, 12, 15)
-3. Configuración gobernada (principios 21, 24, 25)
-4. Experiencia de usuario (principios 10, 13)
-5. Escalabilidad técnica (principios 14, 22, 23)
+2. Identidad operacional (principios 26, 27, 28, 29, 30)
+3. **Core Engine y eventos (principios 31, 32, 33, 34, 35)**
+4. Operabilidad manual (principios 11, 12, 15)
+5. Configuración gobernada (principios 21, 24, 25)
+6. Experiencia de usuario (principios 10, 13)
+7. Escalabilidad técnica (principios 14, 22, 23)
 
 ---
 
@@ -193,11 +263,11 @@ En caso de conflicto aparente, aplicar en este orden:
 
 | Momento | Acción |
 |---------|--------|
-| Diseño de feature | Verificar que respeta principios 1–8, 16–20 y 21–25 |
-| Code review | Rechazar duplicación de datos, taxonomía en código y atajos que salten Recursos |
+| Diseño de feature | Verificar principios 1–8, 16–20, 21–25, **26–30 y 31–35** |
+| Code review | Rechazar duplicación de datos, taxonomía en código, UUID visible, **side effects en router fuera del Core** |
 | Sprint planning | Ordenar módulos según dependencias (Administración de Producción → Recursos → Inventario → …) |
 | ADR nuevo | Referenciar principio(s) afectados |
 
 ---
 
-*Documento v1.2 — Principios de producto BrewOS / Insular Origins (ADR-0006)*
+*Documento v1.4 — Principios de producto BrewOS / Insular Origins (ADR-0006, ADR-0007, ADR-0008)*

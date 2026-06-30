@@ -2,7 +2,7 @@
 
 Mapa funcional de navegación principal de BrewOS. Define la estructura del menú, submenús, acciones, datos y relaciones entre módulos antes del desarrollo funcional.
 
-**Documentos relacionados:** [04 — Módulos](04-modules.md) · [03 — Roadmap](03-roadmap.md) · [11 — Principios de producto](11-product-principles.md) · [12 — Dominio de Recursos](12-resource-domain.md) · [ADR-0005](decisions/ADR-0005-resource-as-core-entity.md)
+**Documentos relacionados:** [04 — Módulos](04-modules.md) · [03 — Roadmap](03-roadmap.md) · [11 — Principios de producto](11-product-principles.md) · [12 — Dominio de Recursos](12-resource-domain.md) · [18 — Identidad operacional](18-operational-identity.md) · [ADR-0005](decisions/ADR-0005-resource-as-core-entity.md) · [ADR-0007](decisions/ADR-0007-operational-identity-standard.md)
 
 ---
 
@@ -586,6 +586,8 @@ Subgrupo bajo **Configuración** (`/settings/production`). Permite **administrar
 3. **Breadcrumbs** en vistas internas: Módulo → Submenú → Detalle
 4. **Móvil:** sidebar colapsada; mismos módulos, sin ocultar funcionalidad
 5. **Nombres en español** en interfaz; identificadores técnicos en inglés (ver [ADR-0001](decisions/ADR-0001-interface-language.md))
+6. **Código operacional visible** en toda vista de detalle y listado: `internal_code` (ej. `BREW-RES-000042`), nunca UUID — ver [18 — Identidad operacional](18-operational-identity.md)
+7. **Icono y color de módulo** según estándar operacional (doc 18 §5–6); coherente con [09 — Design System](09-design-system.md)
 
 ---
 
@@ -606,4 +608,4 @@ Subgrupo bajo **Configuración** (`/settings/production`). Permite **administrar
 
 ---
 
-*Documento v1.2 — Mapa de navegación BrewOS (Administración de Producción — ADR-0006)*
+*Documento v1.3 — Mapa de navegación BrewOS (Identidad operacional — ADR-0007)*

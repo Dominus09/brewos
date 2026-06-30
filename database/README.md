@@ -2,9 +2,41 @@
 
 Esquemas, migraciones y datos semilla de **PostgreSQL** para BrewOS.
 
+## Arquitectura de schemas
+
+BrewOS comparte la base de datos **`analytics`** con otros sistemas de la empresa. Cada sistema tiene su **propio schema PostgreSQL**; BrewOS usa exclusivamente **`brewos`**.
+
+```text
+analytics (database)
+├── analytics      # Datos analíticos
+├── app            # Aplicaciones internas
+├── bsale          # Integración BSale
+├── distribuidora  # Distribuidora
+├── brewos         # BrewOS — ERP/LIMS artesanal
+└── public         # Objetos compartidos / legacy
+```
+
+### Principios
+
+| Principio | Aplicación |
+|-----------|------------|
+| Una base PostgreSQL | `analytics` — respaldo, monitoreo y conexiones centralizados |
+| Múltiples schemas | Separación lógica por sistema sin duplicar instancias |
+| Aislamiento funcional | BrewOS solo crea/lee tablas en `brewos`; no toca `bsale`, `distribuidora`, etc. |
+| Consultas cruzadas | Posibles con `schema.tabla` cuando un reporte integre sistemas |
+| Migraciones propias | Alembic de BrewOS solo gestiona objetos en `brewos` |
+
+### Convención de nombres
+
+- Base de datos: `analytics`
+- Schema BrewOS: `brewos` (constante `DATABASE_SCHEMA` en backend)
+- Tabla de ejemplo: `analytics.brewos.resources`
+
+La tabla de versiones de Alembic (`alembic_version`) también reside en `brewos`.
+
 ## Estrategia PostgreSQL
 
-- **Una sola base** PostgreSQL para BrewOS (datos transaccionales y configuración dinámica).
+- **Una sola base** PostgreSQL (`analytics`) con schema dedicado `brewos`.
 - **Integridad referencial** con FK explícitas e índices en columnas de join.
 - **Sin datos mock** en base real: solo seeds documentados y datos operativos creados por usuarios.
 - **Tipos de negocio configurables** en tablas (`resource_types`, `configurable_states`, etc.), no enums PostgreSQL de dominio.
@@ -38,6 +70,18 @@ Toda tabla transaccional y de configuración incluye:
 - No se usa `DELETE` físico en operación normal.
 - `DELETE` físico solo en scripts de mantenimiento documentados.
 
+### Índices únicos parciales (activos)
+
+Para evitar duplicados entre registros activos con soft delete:
+
+| Tabla | Constraint |
+|-------|------------|
+| `resource_suppliers` | `(resource_id, supplier_id)` único si `deleted_at IS NULL` |
+| `resource_suppliers` | Un solo `is_primary = true` por `resource_id` activo |
+| `resource_tag_links` | `(resource_id, tag_id)` único si `deleted_at IS NULL` |
+| `resource_tags` | `slug` único si `deleted_at IS NULL` |
+| `resource_photos` | Un solo `is_primary = true` por `resource_id` activo |
+
 ## Migraciones (Alembic)
 
 **Alembic en `backend/` es la única forma de migrar el esquema.**
@@ -59,14 +103,13 @@ backend/
 5. Revisar SQL generado antes de merge.
 6. **No editar** migraciones ya aplicadas en producción; crear migración correctiva.
 
-### Flujo local
+### Migraciones aplicadas
 
-```bash
-cd backend
-alembic upgrade head          # aplicar pendientes
-alembic revision --autogenerate -m "descripcion"  # nueva migración
-alembic downgrade -1          # revertir última (solo desarrollo)
-```
+| Revisión | Descripción |
+|----------|-------------|
+| `001_initial_resource_catalog` | Catálogo base: líneas, tipos, categorías, unidades, proveedores, recursos |
+| `002_resource_satellite_tables` | Satélites de recurso: proveedores, costos, documentos, fotos, etiquetas |
+
 
 ## Seed inicial (obligatorio en entornos nuevos)
 
